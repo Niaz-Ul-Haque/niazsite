@@ -16,14 +16,72 @@
 
     <style>
         :root {
-            font-size: 16px; 
+            font-size: 16px;
+            /* Theme Variables */
+            --bg-primary: #111;
+            --bg-secondary: #202020;
+            --bg-tertiary: #2b2b2b;
+            --text-primary: #ffffff;
+            --text-secondary: #d1d5db;
+            --accent-color: #60cdff;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(32, 32, 32, 0.75);
+        }
+
+        /* Light Theme */
+        [data-theme="light"] {
+            --bg-primary: #f0f0f0;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f5;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-color: #3b82f6;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+        }
+        
+        /* Dark Blue Theme */
+        [data-theme="blue"] {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-tertiary: #252b48;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --accent-color: #60a5fa;
+            --border-color: rgba(96, 165, 250, 0.2);
+            --glass-bg: rgba(26, 31, 58, 0.75);
+        }
+        
+        /* Purple Theme */
+        [data-theme="purple"] {
+            --bg-primary: #1a0d2e;
+            --bg-secondary: #2d1b4e;
+            --bg-tertiary: #3e2b5f;
+            --text-primary: #f3e8ff;
+            --text-secondary: #c4b5fd;
+            --accent-color: #a855f7;
+            --border-color: rgba(168, 85, 247, 0.2);
+            --glass-bg: rgba(45, 27, 78, 0.75);
+        }
+        
+        /* Green Theme */
+        [data-theme="green"] {
+            --bg-primary: #0a2e0a;
+            --bg-secondary: #1a4d1a;
+            --bg-tertiary: #2d5f2d;
+            --text-primary: #dcfce7;
+            --text-secondary: #86efac;
+            --accent-color: #22c55e;
+            --border-color: rgba(34, 197, 94, 0.2);
+            --glass-bg: rgba(26, 77, 26, 0.75);
         }
 
         body {
             font-family: 'Noto Sans', sans-serif;
             overflow: hidden;
             user-select: none;
-            background-color: #111;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
         }
         
         /* Custom Scrollbar */
@@ -55,10 +113,10 @@
 
         /* Glassmorphism */
         .glass {
-            background: rgba(32, 32, 32, 0.75);
+            background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-color);
         }
         
         .glass-light {
@@ -75,7 +133,194 @@
 
         /* Window Animations */
         .window-transition {
-            transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s, width 0.2s, height 0.2s, top 0.2s, left 0.2s;
+            transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s, width 0.2s, height 0.2s, top 0.2s, left 0.2s, box-shadow 0.3s;
+        }
+        
+        /* Dynamic Window Shadows */
+        .window-shadow-low {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .window-shadow-high {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Window Blur Effect */
+        .window-inactive {
+            opacity: 0.85;
+            filter: brightness(0.8);
+        }
+        
+        .window-active {
+            opacity: 1;
+            filter: brightness(1);
+        }
+
+        @keyframes windowFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes minimizeToTaskbar {
+            to {
+                transform: scale(0) translateY(100vh);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes restoreFromTaskbar {
+            from {
+                transform: scale(0) translateY(100vh);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes ripple {
+            from {
+                transform: scale(0);
+                opacity: 1;
+            }
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .window-fade-in {
+            animation: windowFadeIn 0.3s ease-out;
+        }
+        
+        .minimize-animation {
+            animation: minimizeToTaskbar 0.3s ease-in forwards;
+        }
+        
+        .restore-animation {
+            animation: restoreFromTaskbar 0.3s ease-out;
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeOut 0.5s ease-out 1.5s forwards;
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #60cdff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Animated Wallpapers */
+        #animated-bg {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        #animated-bg.active {
+            opacity: 1;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .animated-gradient {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .animated-gradient-blue {
+            background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        .animated-gradient-purple {
+            background: linear-gradient(-45deg, #a8edea, #fed6e3, #d299c2, #fef9d7);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        /* Custom Cursors */
+        body {
+            cursor: default;
+        }
+        
+        button, .cursor-pointer {
+            cursor: pointer !important;
+        }
+        
+        .resize-handle-n, .resize-handle-s {
+            cursor: ns-resize !important;
+        }
+        
+        .resize-handle-e, .resize-handle-w {
+            cursor: ew-resize !important;
+        }
+        
+        .resize-handle-ne, .resize-handle-sw {
+            cursor: nesw-resize !important;
+        }
+        
+        .resize-handle-nw, .resize-handle-se {
+            cursor: nwse-resize !important;
+        }
+        
+        .window-transition:active {
+            cursor: grabbing !important;
+        }
+        
+        input[type="text"], textarea, [contenteditable="true"] {
+            cursor: text !important;
+        }
+        
+        a, .link {
+            cursor: pointer !important;
+        }
+        
+        .loading, .loading * {
+            cursor: wait !important;
+        }
+        
+        .disabled, [disabled] {
+            cursor: not-allowed !important;
         }
 
         .taskbar-item-active::after {
@@ -107,6 +352,68 @@
             50% { opacity: 0; }
         }
 
+        /* Window Resize Handles */
+        .resize-handle {
+            position: absolute;
+            z-index: 10;
+        }
+        .resize-handle-n {
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            cursor: ns-resize;
+        }
+        .resize-handle-s {
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            cursor: ns-resize;
+        }
+        .resize-handle-e {
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 5px;
+            cursor: ew-resize;
+        }
+        .resize-handle-w {
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 5px;
+            cursor: ew-resize;
+        }
+        .resize-handle-ne {
+            top: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            cursor: nesw-resize;
+        }
+        .resize-handle-nw {
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            cursor: nwse-resize;
+        }
+        .resize-handle-se {
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            cursor: nwse-resize;
+        }
+        .resize-handle-sw {
+            bottom: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            cursor: nesw-resize;
+        }
+
         /* Resume Formatting */
         .resume-page {
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
@@ -132,6 +439,27 @@
         .font-game {
             font-family: 'Press Start 2P', monospace;
         }
+
+        /* Taskbar Preview */
+        .taskbar-preview {
+            position: absolute;
+            bottom: 3.5rem;
+            background: rgba(32, 32, 32, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+        
+        .taskbar-preview.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center bg-black overflow-hidden">
@@ -139,6 +467,10 @@
     <div id="brightness-overlay" class="fixed inset-0 w-full h-full"></div>
 
     <div id="ui-root" class="w-full h-full overflow-hidden text-white relative text-base">
+        
+        <!-- Animated Background Layer -->
+        <div id="animated-bg" style="position: absolute; inset: 0; z-index: -1;"></div>
+        <canvas id="particle-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0; transition: opacity 0.5s;"></canvas>
         
         <!-- Desktop Icons Container -->
         <div class="absolute top-0 left-0 h-full w-full p-2 grid grid-flow-col grid-rows-[repeat(auto-fill,6.25rem)] gap-2 content-start items-start w-fit z-0" id="desktop-icons">
@@ -393,7 +725,9 @@
             ],
             'games_folder': [
                 { name: 'Neon Snake 3D', icon: 'fa-solid fa-staff-snake', color: 'text-green-400', type: 'app', appId: 'snake' },
-                { name: 'Galactic Defender', icon: 'fa-solid fa-rocket', color: 'text-orange-500', type: 'app', appId: 'shooter' }
+                { name: 'Galactic Defender', icon: 'fa-solid fa-rocket', color: 'text-orange-500', type: 'app', appId: 'shooter' },
+                { name: 'Minesweeper', icon: 'fa-solid fa-bomb', color: 'text-red-400', type: 'app', appId: 'minesweeper' },
+                { name: 'Tic-Tac-Toe', icon: 'fa-solid fa-hashtag', color: 'text-blue-400', type: 'app', appId: 'tictactoe' }
             ],
             'downloads': [
                 { name: 'installer.exe', icon: 'fa-brands fa-windows', color: 'text-blue-300', type: 'file', size: 15400 },
@@ -572,6 +906,7 @@
                 if(this.score > this.highScore) {
                     this.highScore = this.score;
                     if(this.highScoreEl) this.highScoreEl.innerText = this.score;
+                    sys.saveState(); // Save high score
                 }
                 const overlay = document.getElementById('snake-overlay');
                 if (overlay) {
@@ -743,6 +1078,7 @@
                 if(this.score > this.highScore) {
                     this.highScore = this.score;
                     if(this.highScoreEl) this.highScoreEl.innerText = this.score;
+                    sys.saveState(); // Save high score
                 }
                 const overlay = document.getElementById('shooter-overlay');
                 if(overlay) {
@@ -755,6 +1091,366 @@
                 }
             }
         };
+
+        // --- Game Logic: Minesweeper ---
+        var minesweeperGame = {
+            grid: [],
+            gridSize: 10,
+            mineCount: 15,
+            revealed: 0,
+            flagged: 0,
+            gameOver: false,
+            won: false,
+            
+            init: function(containerId, mineCountId, timerDisplay) {
+                this.container = document.getElementById(containerId);
+                this.mineCountDisplay = document.getElementById(mineCountId);
+                this.timerDisplay = document.getElementById(timerDisplay);
+                this.reset();
+            },
+            
+            reset: function() {
+                this.grid = [];
+                this.revealed = 0;
+                this.flagged = 0;
+                this.gameOver = false;
+                this.won = false;
+                this.timer = 0;
+                clearInterval(this.timerInterval);
+                
+                // Initialize grid
+                for(let i = 0; i < this.gridSize; i++) {
+                    this.grid[i] = [];
+                    for(let j = 0; j < this.gridSize; j++) {
+                        this.grid[i][j] = {
+                            mine: false,
+                            revealed: false,
+                            flagged: false,
+                            neighborMines: 0
+                        };
+                    }
+                }
+                
+                // Place mines
+                let placed = 0;
+                while(placed < this.mineCount) {
+                    const row = Math.floor(Math.random() * this.gridSize);
+                    const col = Math.floor(Math.random() * this.gridSize);
+                    if(!this.grid[row][col].mine) {
+                        this.grid[row][col].mine = true;
+                        placed++;
+                    }
+                }
+                
+                // Calculate neighbor counts
+                for(let i = 0; i < this.gridSize; i++) {
+                    for(let j = 0; j < this.gridSize; j++) {
+                        if(!this.grid[i][j].mine) {
+                            this.grid[i][j].neighborMines = this.countNeighborMines(i, j);
+                        }
+                    }
+                }
+                
+                this.render();
+                if(this.mineCountDisplay) this.mineCountDisplay.innerText = this.mineCount;
+                if(this.timerDisplay) this.timerDisplay.innerText = '000';
+            },
+            
+            countNeighborMines: function(row, col) {
+                let count = 0;
+                for(let i = -1; i <= 1; i++) {
+                    for(let j = -1; j <= 1; j++) {
+                        if(i === 0 && j === 0) continue;
+                        const newRow = row + i;
+                        const newCol = col + j;
+                        if(newRow >= 0 && newRow < this.gridSize && newCol >= 0 && newCol < this.gridSize) {
+                            if(this.grid[newRow][newCol].mine) count++;
+                        }
+                    }
+                }
+                return count;
+            },
+            
+            reveal: function(row, col) {
+                if(this.gameOver || this.won) return;
+                if(this.grid[row][col].revealed || this.grid[row][col].flagged) return;
+                
+                // Start timer on first click
+                if(this.revealed === 0) {
+                    this.timerInterval = setInterval(() => {
+                        this.timer++;
+                        if(this.timerDisplay) this.timerDisplay.innerText = String(this.timer).padStart(3, '0');
+                    }, 1000);
+                }
+                
+                this.grid[row][col].revealed = true;
+                this.revealed++;
+                
+                if(this.grid[row][col].mine) {
+                    this.gameOver = true;
+                    clearInterval(this.timerInterval);
+                    this.revealAll();
+                    this.render();
+                    setTimeout(() => alert('💣 Game Over! You hit a mine!'), 100);
+                    return;
+                }
+                
+                // Auto-reveal neighbors if no mines nearby
+                if(this.grid[row][col].neighborMines === 0) {
+                    for(let i = -1; i <= 1; i++) {
+                        for(let j = -1; j <= 1; j++) {
+                            if(i === 0 && j === 0) continue;
+                            const newRow = row + i;
+                            const newCol = col + j;
+                            if(newRow >= 0 && newRow < this.gridSize && newCol >= 0 && newCol < this.gridSize) {
+                                this.reveal(newRow, newCol);
+                            }
+                        }
+                    }
+                }
+                
+                // Check win condition
+                if(this.revealed === this.gridSize * this.gridSize - this.mineCount) {
+                    this.won = true;
+                    clearInterval(this.timerInterval);
+                    setTimeout(() => alert('🎉 You Win! All mines found!'), 100);
+                }
+                
+                this.render();
+            },
+            
+            flag: function(row, col) {
+                if(this.gameOver || this.won) return;
+                if(this.grid[row][col].revealed) return;
+                
+                this.grid[row][col].flagged = !this.grid[row][col].flagged;
+                this.flagged += this.grid[row][col].flagged ? 1 : -1;
+                
+                if(this.mineCountDisplay) {
+                    this.mineCountDisplay.innerText = this.mineCount - this.flagged;
+                }
+                
+                this.render();
+            },
+            
+            revealAll: function() {
+                for(let i = 0; i < this.gridSize; i++) {
+                    for(let j = 0; j < this.gridSize; j++) {
+                        this.grid[i][j].revealed = true;
+                    }
+                }
+            },
+            
+            render: function() {
+                if(!this.container) return;
+                this.container.innerHTML = '';
+                
+                for(let i = 0; i < this.gridSize; i++) {
+                    for(let j = 0; j < this.gridSize; j++) {
+                        const cell = this.grid[i][j];
+                        const btn = document.createElement('button');
+                        btn.className = 'w-8 h-8 border border-gray-400 flex items-center justify-center text-xs font-bold transition';
+                        
+                        if(cell.revealed) {
+                            if(cell.mine) {
+                                btn.className += ' bg-red-500 text-white';
+                                btn.innerHTML = '💣';
+                            } else {
+                                btn.className += ' bg-gray-200 text-gray-800';
+                                if(cell.neighborMines > 0) {
+                                    btn.innerText = cell.neighborMines;
+                                    // Color based on number
+                                    const colors = ['', 'text-blue-600', 'text-green-600', 'text-red-600', 'text-purple-600', 'text-yellow-600'];
+                                    btn.className += ' ' + (colors[cell.neighborMines] || 'text-gray-800');
+                                }
+                            }
+                        } else {
+                            btn.className += ' bg-gray-400 hover:bg-gray-500 active:bg-gray-300';
+                            if(cell.flagged) {
+                                btn.innerHTML = '🚩';
+                            }
+                            btn.onclick = () => this.reveal(i, j);
+                            btn.oncontextmenu = (e) => {
+                                e.preventDefault();
+                                this.flag(i, j);
+                            };
+                        }
+                        
+                        this.container.appendChild(btn);
+                    }
+                }
+            }
+        };
+
+        // --- Game Logic: Tic-Tac-Toe ---
+        var ticTacToeGame = {
+            board: [],
+            currentPlayer: 'X',
+            gameOver: false,
+            xWins: 0,
+            oWins: 0,
+            
+            init: function(boardId, statusId, xWinsId, oWinsId) {
+                this.boardEl = document.getElementById(boardId);
+                this.statusEl = document.getElementById(statusId);
+                this.xWinsEl = document.getElementById(xWinsId);
+                this.oWinsEl = document.getElementById(oWinsId);
+                this.reset();
+            },
+            
+            reset: function() {
+                this.board = Array(9).fill(null);
+                this.currentPlayer = 'X';
+                this.gameOver = false;
+                if(this.statusEl) this.statusEl.innerText = "Player X's Turn";
+                this.render();
+            },
+            
+            makeMove: function(index) {
+                if(this.gameOver || this.board[index]) return;
+                
+                this.board[index] = this.currentPlayer;
+                this.render();
+                
+                if(this.checkWinner()) {
+                    this.gameOver = true;
+                    if(this.statusEl) this.statusEl.innerText = `Player ${this.currentPlayer} Wins! 🎉`;
+                    if(this.currentPlayer === 'X') {
+                        this.xWins++;
+                        if(this.xWinsEl) this.xWinsEl.innerText = this.xWins;
+                    } else {
+                        this.oWins++;
+                        if(this.oWinsEl) this.oWinsEl.innerText = this.oWins;
+                    }
+                    return;
+                }
+                
+                if(this.board.every(cell => cell !== null)) {
+                    this.gameOver = true;
+                    if(this.statusEl) this.statusEl.innerText = "It's a Draw! 🤝";
+                    return;
+                }
+                
+                this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+                if(this.statusEl) this.statusEl.innerText = `Player ${this.currentPlayer}'s Turn`;
+            },
+            
+            checkWinner: function() {
+                const lines = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+                    [0, 4, 8], [2, 4, 6]             // Diagonals
+                ];
+                
+                for(let line of lines) {
+                    const [a, b, c] = line;
+                    if(this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) {
+                        return true;
+                    }
+                }
+                return false;
+            },
+            
+            render: function() {
+                if(!this.boardEl) return;
+                this.boardEl.innerHTML = '';
+                
+                this.board.forEach((cell, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-20 h-20 bg-white border-2 border-gray-800 text-4xl font-bold hover:bg-gray-100 transition flex items-center justify-center';
+                    btn.innerText = cell || '';
+                    btn.onclick = () => this.makeMove(index);
+                    
+                    if(cell === 'X') {
+                        btn.className += ' text-blue-600';
+                    } else if(cell === 'O') {
+                        btn.className += ' text-red-600';
+                    }
+                    
+                    this.boardEl.appendChild(btn);
+                });
+            }
+        };
+
+        // --- Particle System for Animated Background ---
+        class ParticleSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.particles = [];
+                this.particleCount = 100;
+                this.running = false;
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            
+            resize() {
+                const uiRoot = document.getElementById('ui-root');
+                this.canvas.width = uiRoot.offsetWidth;
+                this.canvas.height = uiRoot.offsetHeight;
+            }
+            
+            start() {
+                if (this.running) return;
+                this.running = true;
+                this.particles = [];
+                
+                for (let i = 0; i < this.particleCount; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.canvas.width,
+                        y: Math.random() * this.canvas.height,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        radius: Math.random() * 2 + 1,
+                        color: `hsl(${Math.random() * 60 + 180}, 70%, 60%)`
+                    });
+                }
+                
+                this.animate();
+            }
+            
+            stop() {
+                this.running = false;
+            }
+            
+            animate() {
+                if (!this.running) return;
+                
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fillStyle = p.color;
+                    this.ctx.fill();
+                    
+                    // Draw connections
+                    this.particles.forEach(p2 => {
+                        const dx = p.x - p2.x;
+                        const dy = p.y - p2.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 100) {
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(p.x, p.y);
+                            this.ctx.lineTo(p2.x, p2.y);
+                            this.ctx.strokeStyle = `rgba(96, 205, 255, ${1 - dist / 100})`;
+                            this.ctx.lineWidth = 0.5;
+                            this.ctx.stroke();
+                        }
+                    });
+                });
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
 
         // --- App Logic Objects (Defined as VAR to ensure visibility) ---
         var fileExplorer = {
@@ -780,25 +1476,225 @@
         };
 
         var terminalApp = {
+            history: [],
+            historyIndex: -1,
+            currentDir: '~',
+            
             init: function(winId) {
-                const typeEl = document.getElementById(`term-type-${winId}`);
+                this.winId = winId;
                 const outEl = document.getElementById(`term-output-${winId}`);
-                if (!typeEl || !outEl) return;
+                if (!outEl) return;
                 
-                // Clear previous
-                typeEl.innerText = "";
-                outEl.innerHTML = "";
+                outEl.innerHTML = `
+                    <div class="text-green-400 mb-2">NiazOS Terminal v1.0</div>
+                    <div class="text-gray-400 text-sm mb-4">Type 'help' for available commands</div>
+                    <div class="flex items-center">
+                        <span class="text-blue-400">niaz@portfolio</span>
+                        <span class="text-white">:</span>
+                        <span class="text-purple-400" id="term-dir-${winId}">~</span>
+                        <span class="text-white">$ </span>
+                        <input type="text" id="term-input-${winId}" class="flex-1 bg-transparent border-none outline-none text-green-400 font-mono ml-1" autofocus>
+                    </div>
+                    <div id="term-history-${winId}"></div>
+                `;
                 
-                setTimeout(() => {
-                    if (typeEl) typeEl.innerText = "npm run start:portfolio";
-                    setTimeout(() => {
-                        if (outEl) outEl.innerHTML = `
-                            <div class="text-gray-400">Loading Niaz's Architecture...</div>
-                            <div class="text-green-400 font-bold mt-2">Done. Status: Hired.</div>
-                            <div class="mt-4">niaz@portfolio:~/desktop$ <span class="cursor-blink">_</span></div>
-                        `;
-                    }, 800);
-                }, 500);
+                const input = document.getElementById(`term-input-${winId}`);
+                if (input) {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            this.executeCommand(input.value.trim());
+                            input.value = '';
+                        } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            if (this.historyIndex < this.history.length - 1) {
+                                this.historyIndex++;
+                                input.value = this.history[this.history.length - 1 - this.historyIndex];
+                            }
+                        } else if (e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            if (this.historyIndex > 0) {
+                                this.historyIndex--;
+                                input.value = this.history[this.history.length - 1 - this.historyIndex];
+                            } else {
+                                this.historyIndex = -1;
+                                input.value = '';
+                            }
+                        }
+                    });
+                    input.focus();
+                }
+            },
+            
+            executeCommand: function(cmd) {
+                if (!cmd) return;
+                
+                this.history.push(cmd);
+                this.historyIndex = -1;
+                
+                const historyEl = document.getElementById(`term-history-${this.winId}`);
+                const parts = cmd.split(' ');
+                const command = parts[0].toLowerCase();
+                const args = parts.slice(1);
+                
+                let output = '';
+                
+                switch(command) {
+                    case 'help':
+                        output = `
+<div class="text-cyan-400 font-bold mb-2">Available Commands:</div>
+<div class="grid grid-cols-2 gap-2 text-sm">
+  <div><span class="text-yellow-400">ls</span> - List directory contents</div>
+  <div><span class="text-yellow-400">cd</span> - Change directory</div>
+  <div><span class="text-yellow-400">cat</span> - Display file contents</div>
+  <div><span class="text-yellow-400">pwd</span> - Print working directory</div>
+  <div><span class="text-yellow-400">whoami</span> - Display user info</div>
+  <div><span class="text-yellow-400">skills</span> - List technical skills</div>
+  <div><span class="text-yellow-400">projects</span> - Show portfolio projects</div>
+  <div><span class="text-yellow-400">contact</span> - Display contact info</div>
+  <div><span class="text-yellow-400">clear</span> - Clear terminal</div>
+  <div><span class="text-yellow-400">neofetch</span> - System info (ASCII art)</div>
+  <div><span class="text-yellow-400">echo</span> - Print text</div>
+  <div><span class="text-yellow-400">date</span> - Show current date/time</div>
+</div>`;
+                        break;
+                    
+                    case 'ls':
+                        const dirs = ['Desktop', 'Documents', 'Downloads', 'Games', 'Projects'];
+                        output = `<div class="grid grid-cols-3 gap-2">${dirs.map(d => `<div class="text-blue-400">📁 ${d}</div>`).join('')}</div>`;
+                        break;
+                    
+                    case 'cd':
+                        if (!args[0]) {
+                            this.currentDir = '~';
+                        } else if (args[0] === '..') {
+                            this.currentDir = '~';
+                        } else {
+                            this.currentDir = args[0];
+                        }
+                        document.getElementById(`term-dir-${this.winId}`).innerText = this.currentDir;
+                        break;
+                    
+                    case 'pwd':
+                        output = `<div class="text-white">/home/niaz/${this.currentDir}</div>`;
+                        break;
+                    
+                    case 'whoami':
+                        output = `
+<div class="text-cyan-400 font-bold text-lg mb-2">Mohammed Niaz Ul Haque</div>
+<div class="text-white">Full Stack Engineer @ Fourth Dimension (4D)</div>
+<div class="text-gray-400">Location: Toronto, Canada 🇨🇦</div>
+<div class="text-gray-400 mt-2">Building secure, high-performing web platforms</div>`;
+                        break;
+                    
+                    case 'skills':
+                        output = `
+<div class="text-yellow-400 font-bold mb-2">🚀 Technical Skills:</div>
+<div class="ml-4">
+  <div class="text-green-400">Languages:</div>
+  <div class="ml-4 text-gray-300">TypeScript • JavaScript • Node.js • Python • C#</div>
+  
+  <div class="text-green-400 mt-2">Frontend:</div>
+  <div class="ml-4 text-gray-300">React • Next.js • Angular • Vue.js • Tailwind CSS</div>
+  
+  <div class="text-green-400 mt-2">Backend:</div>
+  <div class="ml-4 text-gray-300">AWS Lambda • API Gateway • DocumentDB • Express</div>
+  
+  <div class="text-green-400 mt-2">Tools & DevOps:</div>
+  <div class="ml-4 text-gray-300">Docker • Kubernetes • Git • Jest • CI/CD</div>
+</div>`;
+                        break;
+                    
+                    case 'projects':
+                        output = `
+<div class="text-purple-400 font-bold mb-2">💼 Portfolio Projects:</div>
+<div class="space-y-2 ml-4">
+  <div class="border-l-2 border-blue-400 pl-2">
+    <div class="text-white font-semibold">Multi-Tenant Plugin Platform</div>
+    <div class="text-gray-400 text-sm">Event-driven architecture • AWS Serverless • React</div>
+  </div>
+  <div class="border-l-2 border-green-400 pl-2">
+    <div class="text-white font-semibold">MerlinPay Payment Platform</div>
+    <div class="text-gray-400 text-sm">B2B/B2C payments • Vue.js • OAuth2</div>
+  </div>
+  <div class="border-l-2 border-yellow-400 pl-2">
+    <div class="text-white font-semibold">OPS Enterprise Intranet</div>
+    <div class="text-gray-400 text-sm">VueJS • Go • Docker • Kubernetes • AODA compliant</div>
+  </div>
+</div>`;
+                        break;
+                    
+                    case 'contact':
+                        output = `
+<div class="text-pink-400 font-bold mb-2">📧 Contact Information:</div>
+<div class="ml-4 space-y-1">
+  <div>📧 Email: <span class="text-cyan-400">theniaz619@gmail.com</span></div>
+  <div>💼 LinkedIn: <span class="text-cyan-400">linkedin.com/in/mohammed-niaz-ul</span></div>
+  <div>📱 Phone: <span class="text-cyan-400">647-657-6450</span></div>
+  <div>📍 Location: <span class="text-cyan-400">Scarborough, Ontario, Canada</span></div>
+</div>`;
+                        break;
+                    
+                    case 'clear':
+                        historyEl.innerHTML = '';
+                        return;
+                    
+                    case 'neofetch':
+                        output = `
+<div class="grid grid-cols-2 gap-4">
+  <div class="text-cyan-400 font-mono text-xs leading-tight">
+       _____<br>
+      /     \\<br>
+     | () () |<br>
+      \\  ^  /<br>
+       |||||<br>
+       |||||
+  </div>
+  <div class="text-sm">
+    <div><span class="text-cyan-400">OS:</span> NiazOS v1.0</div>
+    <div><span class="text-cyan-400">User:</span> Mohammed Niaz</div>
+    <div><span class="text-cyan-400">Shell:</span> bash 5.1</div>
+    <div><span class="text-cyan-400">Role:</span> Full Stack Engineer</div>
+    <div><span class="text-cyan-400">Uptime:</span> ∞ (Always learning)</div>
+    <div><span class="text-cyan-400">Stack:</span> MERN + AWS</div>
+  </div>
+</div>`;
+                        break;
+                    
+                    case 'echo':
+                        output = `<div class="text-white">${args.join(' ')}</div>`;
+                        break;
+                    
+                    case 'date':
+                        output = `<div class="text-white">${new Date().toString()}</div>`;
+                        break;
+                    
+                    case 'cat':
+                        if (!args[0]) {
+                            output = `<div class="text-red-400">cat: missing file operand</div>`;
+                        } else {
+                            output = `<div class="text-red-400">cat: ${args[0]}: No such file or directory</div>`;
+                        }
+                        break;
+                    
+                    default:
+                        output = `<div class="text-red-400">Command not found: ${command}</div><div class="text-gray-400">Type 'help' for available commands</div>`;
+                }
+                
+                historyEl.innerHTML += `
+                    <div class="mt-2">
+                        <div class="flex items-center text-gray-400">
+                            <span class="text-blue-400">niaz@portfolio</span>
+                            <span>:</span>
+                            <span class="text-purple-400">${this.currentDir}</span>
+                            <span>$ ${cmd}</span>
+                        </div>
+                        <div class="ml-4 mt-1">${output}</div>
+                    </div>
+                `;
+                
+                // Scroll to bottom
+                const container = document.getElementById(`term-output-${this.winId}`).parentElement;
+                if (container) container.scrollTop = container.scrollHeight;
             }
         };
 
@@ -958,7 +1854,7 @@
         const APPS = {
             'notepad': { id: 'notepad', name: 'Text Editor', icon: 'fa-regular fa-file-lines', color: 'text-blue-400', width: 28, height: 22, content: (id, d) => `<textarea class="w-full h-full bg-[#282828] text-white p-4 outline-none font-mono resize-none">${d.content}</textarea>` },
             'pdf-viewer': { id: 'pdf-viewer', name: 'Resume Viewer', icon: 'fa-solid fa-file-pdf', color: 'text-red-500', width: 45, height: 38, content: (id, d) => `<div class="h-full overflow-auto bg-[#525659] p-8 flex justify-center scrollbar-fix"><div class="bg-white text-black p-8 max-w-3xl min-h-fit shadow-lg">${d.content}</div></div>` },
-            'terminal': { id: 'terminal', name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', width: 28, height: 20, content: (id) => `<div class="h-full bg-black text-green-400 font-mono p-4"><div id="term-type-${id}"></div><div id="term-output-${id}"></div></div>` },
+            'terminal': { id: 'terminal', name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', width: 35, height: 24, content: (id) => `<div class="h-full bg-black text-green-400 font-mono p-4 text-sm overflow-auto" id="term-output-${id}"></div>` },
             'chrome': { id: 'chrome', name: 'Chrome', icon: 'fa-brands fa-chrome', color: 'text-blue-500', width: 42, height: 28, content: (id) => `<div class="h-full flex flex-col bg-white"><div class="h-full relative"><iframe id="iframe-${id}" class="w-full h-full border-none"></iframe><div class="absolute inset-0 pointer-events-none iframe-blocker"></div></div></div>` },
             'explorer': { id: 'explorer', name: 'Explorer', icon: 'fa-solid fa-folder', color: 'text-yellow-400', width: 38, height: 26, content: (id) => generateExplorerHTML(id, 'desktop', 'Desktop') },
             
@@ -1075,6 +1971,51 @@
                         </div>
                     </div>
                 </div>`
+            },
+            'minesweeper': {
+                id: 'minesweeper', name: 'Minesweeper', icon: 'fa-solid fa-bomb', color: 'text-red-400', width: 22, height: 28,
+                content: (id) => {
+                    setTimeout(() => minesweeperGame.init(`ms-grid-${id}`, `ms-count-${id}`, `ms-timer-${id}`), 100);
+                    return `
+                    <div class="flex flex-col h-full bg-gray-300 p-2 select-none">
+                        <div class="bg-gray-200 border-2 border-gray-400 p-2 mb-2 flex justify-between items-center">
+                            <div class="bg-black text-red-500 font-mono text-lg px-2 py-1 border-2 border-gray-400" id="ms-count-${id}">015</div>
+                            <button onclick="minesweeperGame.reset()" class="text-2xl hover:scale-110 transition">😊</button>
+                            <div class="bg-black text-red-500 font-mono text-lg px-2 py-1 border-2 border-gray-400" id="ms-timer-${id}">000</div>
+                        </div>
+                        <div class="flex-1 bg-gray-200 border-2 border-gray-400 p-2 overflow-auto flex justify-center items-center">
+                            <div class="grid grid-cols-10 gap-0" id="ms-grid-${id}"></div>
+                        </div>
+                        <div class="text-xs text-center mt-2 text-gray-700">Left-click to reveal • Right-click to flag</div>
+                    </div>`;
+                }
+            },
+            'tictactoe': {
+                id: 'tictactoe', name: 'Tic-Tac-Toe', icon: 'fa-solid fa-hashtag', color: 'text-blue-400', width: 22, height: 28,
+                content: (id) => {
+                    setTimeout(() => ticTacToeGame.init(`ttt-board-${id}`, `ttt-status-${id}`, `ttt-x-${id}`, `ttt-o-${id}`), 100);
+                    return `
+                    <div class="flex flex-col h-full bg-gradient-to-br from-blue-100 to-purple-100 p-4 select-none">
+                        <div class="text-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">Tic-Tac-Toe</h2>
+                            <div class="text-lg font-semibold text-gray-700" id="ttt-status-${id}">Player X's Turn</div>
+                        </div>
+                        <div class="flex-1 flex items-center justify-center">
+                            <div class="grid grid-cols-3 gap-1 bg-gray-800 p-1 rounded-lg shadow-xl" id="ttt-board-${id}"></div>
+                        </div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <div class="text-center">
+                                <div class="text-sm text-gray-600">Player X</div>
+                                <div class="text-2xl font-bold text-blue-600" id="ttt-x-${id}">0</div>
+                            </div>
+                            <button onclick="ticTacToeGame.reset()" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-semibold">New Game</button>
+                            <div class="text-center">
+                                <div class="text-sm text-gray-600">Player O</div>
+                                <div class="text-2xl font-bold text-red-600" id="ttt-o-${id}">0</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
             }
         };
 
@@ -1084,6 +2025,80 @@
                 this.zIndex = 10; // Base Z-Index for windows (Taskbar is 50)
                 this.windowArea = document.getElementById('window-area');
                 this.taskbarApps = document.getElementById('taskbar-apps');
+                this.currentWindowIndex = -1;
+                this.setupKeyboardShortcuts();
+            }
+            
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // Alt+Tab: Switch between windows
+                    if (e.altKey && e.key === 'Tab') {
+                        e.preventDefault();
+                        this.cycleWindows();
+                    }
+                    
+                    // Meta/Win: Toggle Start Menu
+                    if (e.key === 'Meta' || e.key === 'OS') {
+                        e.preventDefault();
+                        sys.toggleStartMenu();
+                    }
+                    
+                    // F11: Toggle fullscreen
+                    if (e.key === 'F11') {
+                        e.preventDefault();
+                        this.toggleFullscreen();
+                    }
+                    
+                    // Ctrl+W: Close active window
+                    if (e.ctrlKey && e.key === 'w') {
+                        e.preventDefault();
+                        const activeWin = this.getActiveWindow();
+                        if (activeWin) this.closeWindow(activeWin);
+                    }
+                    
+                    // Escape: Close Start Menu/context menus
+                    if (e.key === 'Escape') {
+                        const menu = document.getElementById('start-menu');
+                        const isOpen = menu.style.bottom === '3rem' || menu.style.bottom === '48px';
+                        if (isOpen) {
+                            sys.toggleStartMenu();
+                        }
+                        const ctxMenu = document.getElementById('context-menu');
+                        if(ctxMenu && ctxMenu.style.display !== 'none') {
+                            ctxMenu.style.display = 'none';
+                        }
+                    }
+                });
+            }
+            
+            cycleWindows() {
+                const winIds = Object.keys(this.windows).filter(id => !this.windows[id].minimized);
+                if (winIds.length === 0) return;
+                
+                this.currentWindowIndex = (this.currentWindowIndex + 1) % winIds.length;
+                const nextWinId = winIds[this.currentWindowIndex];
+                this.bringToFront(nextWinId);
+            }
+            
+            getActiveWindow() {
+                let maxZ = -1;
+                let activeId = null;
+                Object.keys(this.windows).forEach(id => {
+                    const z = parseInt(this.windows[id].element.style.zIndex);
+                    if (z > maxZ) {
+                        maxZ = z;
+                        activeId = id;
+                    }
+                });
+                return activeId;
+            }
+            
+            toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
+                }
             }
             openWindow(appId, extraData = {}) {
                 if (extraData.type === 'folder') {
@@ -1111,7 +2126,7 @@
 
                 const el = document.createElement('div');
                 el.id = winId;
-                el.className = `absolute flex flex-col rounded-lg shadow-2xl border border-white/10 bg-[#202020] overflow-hidden window-transition pointer-events-auto`;
+                el.className = `absolute flex flex-col rounded-lg shadow-2xl border border-white/10 bg-[#202020] overflow-hidden window-transition pointer-events-auto window-fade-in window-active window-shadow-high`;
                 el.style.width = `${config.width}rem`;
                 el.style.height = `${config.height}rem`;
                 el.style.top = `${5 + (Math.random() * 5)}%`;
@@ -1119,6 +2134,9 @@
                 el.style.zIndex = ++this.zIndex;
 
                 const title = extraData.name || config.name;
+                
+                // Check if this is a game or heavy app that needs loading screen
+                const needsLoading = ['snake', 'shooter', 'minesweeper', 'tictactoe', 'chrome', 'word', 'paint'].includes(appId);
 
                 el.innerHTML = `
                     <div class="h-9 bg-[#202020] flex justify-between items-center select-none" id="${winId}-header">
@@ -1133,14 +2151,35 @@
                         </div>
                     </div>
                     <div class="flex-1 relative overflow-hidden bg-[#202020]" id="${winId}-content">
+                        ${needsLoading ? `
+                        <div class="loading-screen">
+                            <div class="loading-spinner"></div>
+                            <div class="text-white mt-4 text-sm">Loading ${title}...</div>
+                        </div>
+                        ` : ''}
                         ${config.content(winId, extraData)}
                     </div>
+                    <!-- Resize Handles -->
+                    <div class="resize-handle resize-handle-n" data-direction="n"></div>
+                    <div class="resize-handle resize-handle-s" data-direction="s"></div>
+                    <div class="resize-handle resize-handle-e" data-direction="e"></div>
+                    <div class="resize-handle resize-handle-w" data-direction="w"></div>
+                    <div class="resize-handle resize-handle-ne" data-direction="ne"></div>
+                    <div class="resize-handle resize-handle-nw" data-direction="nw"></div>
+                    <div class="resize-handle resize-handle-se" data-direction="se"></div>
+                    <div class="resize-handle resize-handle-sw" data-direction="sw"></div>
                 `;
 
                 this.windowArea.appendChild(el);
                 const header = el.querySelector(`#${winId}-header`);
                 if(header) header.addEventListener('mousedown', (e) => this.startDrag(e, el, winId));
                 el.addEventListener('mousedown', () => this.bringToFront(winId));
+
+                // Add resize listeners to all handles
+                const resizeHandles = el.querySelectorAll('.resize-handle');
+                resizeHandles.forEach(handle => {
+                    handle.addEventListener('mousedown', (e) => this.startResize(e, el, winId, handle.dataset.direction));
+                });
 
                 this.windows[winId] = { id: winId, element: el, minimized: false, maximized: false, prevRect: null };
                 this.addTaskbarItem(appId, winId);
@@ -1167,8 +2206,25 @@
                 }
             }
 
-            minimizeWindow(id) { this.windows[id].element.style.display = 'none'; this.windows[id].minimized = true; }
-            restoreWindow(id) { this.windows[id].element.style.display = 'flex'; this.windows[id].minimized = false; this.bringToFront(id); }
+            minimizeWindow(id) { 
+                const win = this.windows[id];
+                win.element.classList.add('minimize-animation');
+                setTimeout(() => {
+                    win.element.style.display = 'none';
+                    win.element.classList.remove('minimize-animation');
+                    win.minimized = true;
+                }, 300);
+            }
+            restoreWindow(id) { 
+                const win = this.windows[id];
+                win.element.style.display = 'flex';
+                win.element.classList.add('restore-animation');
+                win.minimized = false;
+                this.bringToFront(id);
+                setTimeout(() => {
+                    win.element.classList.remove('restore-animation');
+                }, 300);
+            }
             maximizeWindow(id) { 
                 const win = this.windows[id];
                 if(win.maximized) { 
@@ -1180,11 +2236,27 @@
                     win.maximized = true;
                 }
             }
-            bringToFront(id) { if(this.windows[id]) this.windows[id].element.style.zIndex = ++this.zIndex; }
+            bringToFront(id) { 
+                if(this.windows[id]) {
+                    // Set all windows to inactive
+                    Object.keys(this.windows).forEach(winId => {
+                        const el = this.windows[winId].element;
+                        el.classList.remove('window-active', 'window-shadow-high');
+                        el.classList.add('window-inactive', 'window-shadow-low');
+                    });
+                    
+                    // Set this window to active
+                    const el = this.windows[id].element;
+                    el.style.zIndex = ++this.zIndex;
+                    el.classList.remove('window-inactive', 'window-shadow-low');
+                    el.classList.add('window-active', 'window-shadow-high');
+                }
+            }
             startDrag(e, el, id) {
                 if(this.windows[id].maximized) return;
                 this.bringToFront(id);
                 e.preventDefault();
+                e.stopPropagation();
                 const blocker = el.querySelector('.iframe-blocker');
                 if(blocker) blocker.style.pointerEvents = 'auto';
                 
@@ -1201,6 +2273,63 @@
                     if(blocker) blocker.style.pointerEvents = 'none';
                 };
             }
+            startResize(e, el, id, direction) {
+                if(this.windows[id].maximized) return;
+                this.bringToFront(id);
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const blocker = el.querySelector('.iframe-blocker');
+                if(blocker) blocker.style.pointerEvents = 'auto';
+                
+                const rect = el.getBoundingClientRect();
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startWidth = rect.width;
+                const startHeight = rect.height;
+                const startLeft = rect.left;
+                const startTop = rect.top;
+                
+                const onMove = (ev) => {
+                    const deltaX = ev.clientX - startX;
+                    const deltaY = ev.clientY - startY;
+                    
+                    let newWidth = startWidth;
+                    let newHeight = startHeight;
+                    let newLeft = startLeft;
+                    let newTop = startTop;
+                    
+                    // Handle different directions
+                    if(direction.includes('e')) {
+                        newWidth = Math.max(200, startWidth + deltaX);
+                    }
+                    if(direction.includes('w')) {
+                        newWidth = Math.max(200, startWidth - deltaX);
+                        newLeft = startLeft + deltaX;
+                        if(newWidth === 200) newLeft = startLeft + startWidth - 200;
+                    }
+                    if(direction.includes('s')) {
+                        newHeight = Math.max(150, startHeight + deltaY);
+                    }
+                    if(direction.includes('n')) {
+                        newHeight = Math.max(150, startHeight - deltaY);
+                        newTop = startTop + deltaY;
+                        if(newHeight === 150) newTop = startTop + startHeight - 150;
+                    }
+                    
+                    el.style.width = newWidth + 'px';
+                    el.style.height = newHeight + 'px';
+                    el.style.left = newLeft + 'px';
+                    el.style.top = newTop + 'px';
+                };
+                
+                document.addEventListener('mousemove', onMove);
+                document.onmouseup = () => {
+                    document.removeEventListener('mousemove', onMove);
+                    document.onmouseup = null;
+                    if(blocker) blocker.style.pointerEvents = 'none';
+                };
+            }
             addTaskbarItem(appId, winId) {
                 const config = APPS[appId];
                 if(document.getElementById(`tb-${winId}`)) return;
@@ -1209,9 +2338,92 @@
                 btn.className = `w-10 h-10 rounded hover:bg-white/10 flex items-center justify-center transition relative taskbar-item-active`;
                 btn.innerHTML = `<i class="${config.icon} ${config.color} text-xl"></i>`;
                 btn.onclick = () => this.windows[winId].minimized ? this.restoreWindow(winId) : this.minimizeWindow(winId);
+                
+                // Preview functionality
+                const preview = document.createElement('div');
+                preview.className = 'taskbar-preview';
+                preview.style.position = 'fixed';
+                preview.innerHTML = `
+                    <div class="flex items-center justify-between mb-2 px-2">
+                        <div class="text-xs text-white">${config.name}</div>
+                        <button class="w-6 h-6 bg-red-500 hover:bg-red-600 rounded flex items-center justify-center text-white text-xs transition" id="close-preview-${winId}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="w-48 h-32 bg-gray-800 rounded overflow-hidden relative border border-white/10 cursor-pointer" id="preview-content-${winId}">
+                        <div class="absolute inset-0 flex items-center justify-center text-gray-500 text-xs">Window Preview</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(preview);
+                
+                // Close button functionality
+                const closeBtn = document.getElementById(`close-preview-${winId}`);
+                closeBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    preview.classList.remove('show');
+                    this.closeWindow(winId);
+                };
+                
+                // Click preview to restore/focus window
+                const previewContent = document.getElementById(`preview-content-${winId}`);
+                previewContent.onclick = () => {
+                    if (this.windows[winId].minimized) {
+                        this.restoreWindow(winId);
+                    } else {
+                        this.bringToFront(winId);
+                    }
+                    preview.classList.remove('show');
+                };
+                
+                // Hover management with delay
+                let hideTimeout;
+                
+                btn.onmouseenter = () => {
+                    clearTimeout(hideTimeout);
+                    const rect = btn.getBoundingClientRect();
+                    preview.style.left = `${rect.left + rect.width / 2 - 96}px`;
+                    preview.style.bottom = '60px';
+                    
+                    // Capture window preview
+                    const windowEl = this.windows[winId].element;
+                    if (windowEl) {
+                        const previewContent = document.getElementById(`preview-content-${winId}`);
+                        const scale = 0.25;
+                        previewContent.innerHTML = `
+                            <div style="transform: scale(${scale}); transform-origin: top left; width: ${100/scale}%; height: ${100/scale}%;">
+                                ${windowEl.innerHTML}
+                            </div>
+                        `;
+                    }
+                    
+                    setTimeout(() => preview.classList.add('show'), 100);
+                };
+                
+                btn.onmouseleave = () => {
+                    hideTimeout = setTimeout(() => {
+                        preview.classList.remove('show');
+                    }, 200);
+                };
+                
+                preview.onmouseenter = () => {
+                    clearTimeout(hideTimeout);
+                    preview.classList.add('show');
+                };
+                
+                preview.onmouseleave = () => {
+                    preview.classList.remove('show');
+                };
+                
                 this.taskbarApps.appendChild(btn);
             }
-            removeTaskbarItem(id) { const el = document.getElementById(`tb-${id}`); if(el) el.remove(); }
+            removeTaskbarItem(id) { 
+                const el = document.getElementById(`tb-${id}`); 
+                if(el) el.remove();
+                // Also remove preview element
+                const preview = document.querySelector(`.taskbar-preview`);
+                if(preview && preview.innerHTML.includes(id)) preview.remove();
+            }
             zoom(id, val) { /* ... */ }
         }
 
@@ -1232,6 +2444,11 @@
                             <div class="flex items-center gap-3 p-2 rounded ${tab === 'personalization' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'personalization')">
                                 <i class="fa-solid fa-paintbrush text-pink-500 w-5 text-center"></i> 
                                 <span class="text-sm">Personalization</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-2 rounded ${tab === 'theme' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'theme')">
+                                <i class="fa-solid fa-palette text-purple-500 w-5 text-center"></i> 
+                                <span class="text-sm">Theme</span>
                             </div>
                         </div>
                         
@@ -1290,8 +2507,25 @@
                     return `
                         <h2 class="text-2xl font-semibold mb-6">Personalization > Background</h2>
                         
-                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
-                             <div class="font-medium mb-4">Choose your picture</div>
+                        <!-- Wallpaper Type -->
+                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-4">
+                            <div class="font-medium mb-4">Background Type</div>
+                            <div class="flex gap-4">
+                                <button onclick="sys.setWallpaperType('static')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
+                                    🖼️ Static Image
+                                </button>
+                                <button onclick="sys.setWallpaperType('animated')" class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition">
+                                    ✨ Animated Gradient
+                                </button>
+                                <button onclick="sys.setWallpaperType('particles')" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">
+                                    🌟 Particle System
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Static Wallpapers -->
+                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-4">
+                             <div class="font-medium mb-4">Static Wallpapers</div>
                              <div class="grid grid-cols-3 gap-4">
                                 ${wallpapers.map(url => `
                                     <div class="aspect-video rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer transition" onclick="sys.changeWallpaper('${url}')">
@@ -1299,6 +2533,49 @@
                                     </div>
                                 `).join('')}
                              </div>
+                        </div>
+                        
+                        <!-- Animated Gradients -->
+                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="font-medium mb-4">Animated Gradients</div>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="aspect-video rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer transition" onclick="sys.setAnimatedGradient('default')">
+                                    <div class="w-full h-full animated-gradient"></div>
+                                </div>
+                                <div class="aspect-video rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer transition" onclick="sys.setAnimatedGradient('blue')">
+                                    <div class="w-full h-full animated-gradient-blue"></div>
+                                </div>
+                                <div class="aspect-video rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer transition" onclick="sys.setAnimatedGradient('purple')">
+                                    <div class="w-full h-full animated-gradient-purple"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (tab === 'theme') {
+                    const themes = [
+                        { id: 'dark', name: 'Dark', preview: '#111', icon: '🌙' },
+                        { id: 'light', name: 'Light', preview: '#f0f0f0', icon: '☀️' },
+                        { id: 'blue', name: 'Ocean Blue', preview: '#0a0e27', icon: '🌊' },
+                        { id: 'purple', name: 'Royal Purple', preview: '#1a0d2e', icon: '👑' },
+                        { id: 'green', name: 'Forest Green', preview: '#0a2e0a', icon: '🌲' }
+                    ];
+                    
+                    return `
+                        <h2 class="text-2xl font-semibold mb-6">Theme > Color Scheme</h2>
+                        
+                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="font-medium mb-4">Choose your theme</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                ${themes.map(theme => `
+                                    <div class="border-2 border-gray-200 hover:border-blue-500 rounded-lg p-4 cursor-pointer transition" onclick="sys.changeTheme('${theme.id}')">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="text-2xl">${theme.icon}</div>
+                                            <div class="font-semibold">${theme.name}</div>
+                                        </div>
+                                        <div class="w-full h-16 rounded" style="background: ${theme.preview}"></div>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
                     `;
                 }
@@ -1324,6 +2601,76 @@
         // --- Sys Logic ---
         const sys = {
             sortOrder: { by: 'name', asc: true },
+            
+            // LocalStorage Management
+            saveState: function() {
+                const state = {
+                    wallpaper: document.getElementById('ui-root').style.backgroundImage,
+                    brightness: parseInt(document.getElementById('brightness-overlay').style.opacity * 100 / 0.8) || 100,
+                    scale: parseFloat(document.documentElement.style.fontSize) / 16 * 100 || 100,
+                    resolution: this.getCurrentResolution(),
+                    snakeHighScore: snakeGame.highScore,
+                    shooterHighScore: shooterGame.highScore,
+                    windows: Object.keys(wm.windows).map(id => ({
+                        id: wm.windows[id].id,
+                        left: wm.windows[id].element.style.left,
+                        top: wm.windows[id].element.style.top,
+                        width: wm.windows[id].element.style.width,
+                        height: wm.windows[id].element.style.height,
+                        minimized: wm.windows[id].minimized
+                    }))
+                };
+                localStorage.setItem('niazOS_state', JSON.stringify(state));
+            },
+            
+            loadState: function() {
+                const saved = localStorage.getItem('niazOS_state');
+                if (!saved) return;
+                
+                try {
+                    const state = JSON.parse(saved);
+                    
+                    // Restore wallpaper
+                    if (state.wallpaper) {
+                        document.getElementById('ui-root').style.backgroundImage = state.wallpaper;
+                    }
+                    
+                    // Restore brightness
+                    if (state.brightness) {
+                        this.setBrightness(state.brightness);
+                    }
+                    
+                    // Restore scale
+                    if (state.scale) {
+                        this.setScale(state.scale);
+                    }
+                    
+                    // Restore resolution
+                    if (state.resolution) {
+                        this.setResolution(state.resolution);
+                    }
+                    
+                    // Restore high scores
+                    if (state.snakeHighScore) snakeGame.highScore = state.snakeHighScore;
+                    if (state.shooterHighScore) shooterGame.highScore = state.shooterHighScore;
+                    
+                } catch(e) {
+                    console.error('Failed to load state:', e);
+                }
+                
+                // Restore theme separately
+                const savedTheme = localStorage.getItem('niazOS_theme');
+                if (savedTheme && savedTheme !== 'dark') {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                }
+            },
+            
+            getCurrentResolution: function() {
+                const root = document.getElementById('ui-root');
+                if (root.style.width === '100%' || root.style.width === '') return 'full';
+                return root.style.width.replace('px', '') + 'x' + root.style.height.replace('px', '');
+            },
+            
             toggleStartMenu: () => {
                 const menu = document.getElementById('start-menu');
                 // Check if menu is currently open by checking if bottom is 3rem (48px taskbar height)
@@ -1361,7 +2708,7 @@
                 const pinnedApps = [
                     'explorer', 'terminal', 'chrome', 'notepad', 
                     'pdf-viewer', 'paint', 'calculator', 'word',
-                    'snake', 'shooter', 'settings'
+                    'snake', 'shooter', 'minesweeper', 'tictactoe', 'settings'
                 ];
                 
                 pinnedApps.forEach(appId => {
@@ -1398,11 +2745,82 @@
             ,changeWallpaper: (url) => {
                 const root = document.getElementById('ui-root');
                 root.style.backgroundImage = `url('${url}')`;
+                
+                // Disable animated backgrounds
+                const animBg = document.getElementById('animated-bg');
+                const particleCanvas = document.getElementById('particle-canvas');
+                if (animBg) {
+                    animBg.className = '';
+                    animBg.classList.remove('active');
+                }
+                if (particleCanvas) particleCanvas.style.opacity = '0';
+                if (window.particleSystem) window.particleSystem.stop();
+                
+                sys.saveState();
+            },
+            setWallpaperType: (type) => {
+                if (type === 'static') {
+                    sys.changeWallpaper('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+                } else if (type === 'animated') {
+                    sys.setAnimatedGradient('default');
+                } else if (type === 'particles') {
+                    sys.startParticles();
+                }
+            },
+            setAnimatedGradient: (variant) => {
+                const root = document.getElementById('ui-root');
+                root.style.backgroundImage = 'none';
+                
+                const animBg = document.getElementById('animated-bg');
+                const particleCanvas = document.getElementById('particle-canvas');
+                
+                if (animBg) {
+                    animBg.className = 'active';
+                    if (variant === 'blue') {
+                        animBg.classList.add('animated-gradient-blue');
+                    } else if (variant === 'purple') {
+                        animBg.classList.add('animated-gradient-purple');
+                    } else {
+                        animBg.classList.add('animated-gradient');
+                    }
+                }
+                
+                if (particleCanvas) particleCanvas.style.opacity = '0';
+                if (window.particleSystem) window.particleSystem.stop();
+            },
+            startParticles: () => {
+                const root = document.getElementById('ui-root');
+                root.style.backgroundImage = 'none';
+                
+                const animBg = document.getElementById('animated-bg');
+                const particleCanvas = document.getElementById('particle-canvas');
+                
+                if (animBg) {
+                    animBg.className = '';
+                    animBg.classList.remove('active');
+                }
+                
+                if (particleCanvas) {
+                    particleCanvas.style.opacity = '1';
+                    if (!window.particleSystem) {
+                        window.particleSystem = new ParticleSystem(particleCanvas);
+                    }
+                    window.particleSystem.start();
+                }
+            },
+            changeTheme: (themeId) => {
+                if (themeId === 'dark') {
+                    document.documentElement.removeAttribute('data-theme');
+                } else {
+                    document.documentElement.setAttribute('data-theme', themeId);
+                }
+                localStorage.setItem('niazOS_theme', themeId);
             },
             setScale: (val) => {
                 const baseSize = 16;
                 const newSize = baseSize * (parseInt(val) / 100);
                 document.documentElement.style.fontSize = `${newSize}px`;
+                sys.saveState();
             },
             setResolution: (val) => {
                 const root = document.getElementById('ui-root');
@@ -1424,12 +2842,14 @@
                     root.style.transform = 'translateY(-50%)';
                     root.style.margin = '0 auto';
                 }
+                sys.saveState();
             },
             setBrightness: (val) => {
                 const overlay = document.getElementById('brightness-overlay');
                 const brightness = parseInt(val);
                 const opacity = (100 - brightness) / 100 * 0.8; 
                 overlay.style.opacity = opacity;
+                sys.saveState();
             }
         };
 
@@ -1437,9 +2857,16 @@
 
         // --- Initialization ---
         const wm = new WindowManager();
+        
+        // Load saved state first
+        sys.loadState();
+        
         sys.initClock();
         sys.renderDesktop();
         sys.renderStartMenu();
+        
+        // Auto-save state every 30 seconds
+        setInterval(() => sys.saveState(), 30000);
         
         // Attach context menu listeners
         const desktop = document.getElementById('ui-root');
