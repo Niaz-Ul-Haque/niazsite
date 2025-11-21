@@ -173,13 +173,13 @@
             </div>
         </div>
 
-        <!-- Windows Container - Increased Z-Index so windows float above taskbar if dragged low -->
-        <div id="window-area" class="absolute top-0 left-0 w-full h-full z-[70] pointer-events-none">
+        <!-- Windows Container -->
+        <div id="window-area" class="absolute top-0 left-0 w-full h-full z-[40] pointer-events-none">
             <!-- Windows injected by JS -->
         </div>
 
         <!-- Start Menu -->
-        <div id="start-menu" class="glass fixed bottom-[-40.625rem] left-1/2 transform -translate-x-1/2 w-[37.5rem] h-[40.625rem] rounded-t-xl z-[80] flex flex-col opacity-0 shadow-2xl border-b-0 duration-300">
+        <div id="start-menu" class="glass fixed bottom-[-40.625rem] left-1/2 transform -translate-x-1/2 w-[37.5rem] h-[40.625rem] rounded-t-xl z-[50] flex flex-col opacity-0 shadow-2xl border-b-0 duration-300">
             <div class="p-6 pb-2">
                 <div class="bg-[#202020] border border-gray-700 rounded-md flex items-center px-3 py-2 shadow-inner">
                     <i class="fa-solid fa-magnifying-glass text-gray-400 mr-3"></i>
@@ -206,8 +206,8 @@
             </div>
         </div>
 
-        <!-- Taskbar - Z-Index 50 -->
-        <div class="absolute bottom-0 w-full h-12 glass flex justify-between items-center px-4 z-50 select-none" id="taskbar">
+        <!-- Taskbar -->
+        <div class="absolute bottom-0 w-full h-12 glass flex justify-between items-center px-4 z-[45] select-none" id="taskbar">
             <div class="w-32 hidden md:flex opacity-0 hover:opacity-100 transition duration-500">
                 <div class="text-xs flex flex-col justify-center items-center cursor-pointer hover:bg-white/5 p-1 rounded">
                     <span id="weather-temp">21°C</span>
@@ -215,7 +215,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-1 h-full" id="taskbar-apps">
-                <button class="w-10 h-10 rounded hover:bg-white/10 flex items-center justify-center transition active:scale-95" onclick="sys.toggleStartMenu()">
+                <button id="start-btn" class="w-10 h-10 rounded hover:bg-white/10 flex items-center justify-center transition active:scale-95" onclick="sys.toggleStartMenu()">
                     <i class="fa-brands fa-windows text-blue-400 text-xl"></i>
                 </button>
             </div>
@@ -783,10 +783,16 @@
             init: function(winId) {
                 const typeEl = document.getElementById(`term-type-${winId}`);
                 const outEl = document.getElementById(`term-output-${winId}`);
+                if (!typeEl || !outEl) return;
+                
+                // Clear previous
+                typeEl.innerText = "";
+                outEl.innerHTML = "";
+                
                 setTimeout(() => {
-                    typeEl.innerText = "npm run start:portfolio";
+                    if (typeEl) typeEl.innerText = "npm run start:portfolio";
                     setTimeout(() => {
-                        outEl.innerHTML = `
+                        if (outEl) outEl.innerHTML = `
                             <div class="text-gray-400">Loading Niaz's Architecture...</div>
                             <div class="text-green-400 font-bold mt-2">Done. Status: Hired.</div>
                             <div class="mt-4">niaz@portfolio:~/desktop$ <span class="cursor-blink">_</span></div>
@@ -796,9 +802,123 @@
             }
         };
 
-        var chromeApp = { go: function(winId) { document.getElementById(`iframe-${winId}`).src = "https://www.google.com/webhp?igu=1"; }, refresh: function(winId) { this.go(winId); } };
-        var paintApp = { init: function() {}, clear: function() {} }; 
-        var calcApp = { clear: function() {}, num: function() {}, op: function() {}, solve: function() {} };
+        var chromeApp = { 
+            go: function(winId) { 
+                const iframe = document.getElementById(`iframe-${winId}`);
+                if (iframe) iframe.src = "https://www.google.com/webhp?igu=1"; 
+            }, 
+            refresh: function(winId) { this.go(winId); } 
+        };
+        var paintApp = {
+            canvases: {},
+            init: function(id) {
+                const canvas = document.getElementById(`canvas-${id}`);
+                if (!canvas) return;
+                
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                const ctx = canvas.getContext('2d');
+                this.canvases[id] = { canvas, ctx, drawing: false, tool: 'pen' };
+                
+                canvas.addEventListener('mousedown', (e) => this.startDraw(id, e));
+                canvas.addEventListener('mousemove', (e) => this.draw(id, e));
+                canvas.addEventListener('mouseup', () => this.stopDraw(id));
+                canvas.addEventListener('mouseleave', () => this.stopDraw(id));
+            },
+            setTool: function(id, tool) {
+                this.canvases[id].tool = tool;
+                document.getElementById(`tool-pen-${id}`).className = tool === 'pen' ? 'px-3 py-1 bg-blue-500 text-white border border-gray-400 rounded text-xs' : 'px-3 py-1 bg-white border border-gray-400 hover:bg-gray-100 rounded text-xs text-black';
+                document.getElementById(`tool-eraser-${id}`).className = tool === 'eraser' ? 'px-3 py-1 bg-blue-500 text-white border border-gray-400 rounded text-xs' : 'px-3 py-1 bg-white border border-gray-400 hover:bg-gray-100 rounded text-xs text-black';
+            },
+            startDraw: function(id, e) {
+                const data = this.canvases[id];
+                data.drawing = true;
+                const rect = data.canvas.getBoundingClientRect();
+                data.lastX = e.clientX - rect.left;
+                data.lastY = e.clientY - rect.top;
+            },
+            draw: function(id, e) {
+                const data = this.canvases[id];
+                if (!data.drawing) return;
+                
+                const rect = data.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                data.ctx.beginPath();
+                data.ctx.moveTo(data.lastX, data.lastY);
+                data.ctx.lineTo(x, y);
+                data.ctx.strokeStyle = data.tool === 'pen' ? document.getElementById(`color-${id}`).value : '#ffffff';
+                data.ctx.lineWidth = document.getElementById(`size-${id}`).value;
+                data.ctx.lineCap = 'round';
+                data.ctx.stroke();
+                
+                data.lastX = x;
+                data.lastY = y;
+            },
+            stopDraw: function(id) {
+                if (this.canvases[id]) this.canvases[id].drawing = false;
+            },
+            clear: function(id) {
+                const data = this.canvases[id];
+                if (data) data.ctx.clearRect(0, 0, data.canvas.width, data.canvas.height);
+            }
+        };
+        
+        var calcApp = {
+            states: {},
+            clear: function(id) {
+                this.states[id] = { display: '0', current: '0', operator: null, prev: null };
+                document.getElementById(`calc-display-${id}`).innerText = '0';
+            },
+            backspace: function(id) {
+                if (!this.states[id]) this.clear(id);
+                const state = this.states[id];
+                state.current = state.current.length > 1 ? state.current.slice(0, -1) : '0';
+                document.getElementById(`calc-display-${id}`).innerText = state.current;
+            },
+            num: function(id, n) {
+                if (!this.states[id]) this.clear(id);
+                const state = this.states[id];
+                if (state.current === '0' && n !== '.') {
+                    state.current = n;
+                } else if (n === '.' && state.current.includes('.')) {
+                    return;
+                } else {
+                    state.current += n;
+                }
+                document.getElementById(`calc-display-${id}`).innerText = state.current;
+            },
+            op: function(id, operator) {
+                if (!this.states[id]) this.clear(id);
+                const state = this.states[id];
+                if (state.operator && state.prev !== null) {
+                    this.solve(id);
+                }
+                state.prev = parseFloat(state.current);
+                state.operator = operator;
+                state.current = '0';
+            },
+            solve: function(id) {
+                if (!this.states[id]) return;
+                const state = this.states[id];
+                if (state.operator && state.prev !== null) {
+                    const current = parseFloat(state.current);
+                    let result = 0;
+                    switch(state.operator) {
+                        case '+': result = state.prev + current; break;
+                        case '-': result = state.prev - current; break;
+                        case '*': result = state.prev * current; break;
+                        case '/': result = current !== 0 ? state.prev / current : 'Error'; break;
+                    }
+                    state.current = result.toString();
+                    state.operator = null;
+                    state.prev = null;
+                    document.getElementById(`calc-display-${id}`).innerText = state.current;
+                }
+            }
+        };
 
         // --- Helper Function ---
         function generateExplorerHTML(winId, startFolder, title) {
@@ -882,13 +1002,86 @@
                     </div>`;
                 }
             },
-            'settings': { id: 'settings', name: 'Settings', icon: 'fa-solid fa-gear', color: 'text-gray-400', width: 38, height: 26, content: (id, d) => settingsApp.render(id, d.tab || 'system') }
+            'settings': { id: 'settings', name: 'Settings', icon: 'fa-solid fa-gear', color: 'text-gray-400', width: 38, height: 26, content: (id, d) => settingsApp.render(id, d.tab || 'system') },
+            'paint': { 
+                id: 'paint', name: 'Paint', icon: 'fa-solid fa-paintbrush', color: 'text-pink-400', width: 32, height: 24,
+                content: (id) => {
+                    setTimeout(() => paintApp.init(id), 100);
+                    return `
+                    <div class="flex flex-col h-full bg-[#f0f0f0]">
+                        <div class="h-10 bg-[#e0e0e0] border-b border-gray-300 flex items-center gap-2 px-2">
+                            <div class="flex gap-1">
+                                <button onclick="paintApp.setTool('${id}', 'pen')" class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-100 rounded text-xs text-black" id="tool-pen-${id}">Pen</button>
+                                <button onclick="paintApp.setTool('${id}', 'eraser')" class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-100 rounded text-xs text-black" id="tool-eraser-${id}">Eraser</button>
+                            </div>
+                            <div class="h-6 w-px bg-gray-400"></div>
+                            <input type="color" id="color-${id}" value="#000000" class="w-8 h-8 cursor-pointer border border-gray-400 rounded">
+                            <input type="range" id="size-${id}" min="1" max="20" value="3" class="w-24">
+                            <button onclick="paintApp.clear('${id}')" class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-100 rounded text-xs text-black ml-auto">Clear</button>
+                        </div>
+                        <canvas id="canvas-${id}" class="flex-1 bg-white cursor-crosshair"></canvas>
+                    </div>`;
+                }
+            },
+            'calculator': {
+                id: 'calculator', name: 'Calculator', icon: 'fa-solid fa-calculator', color: 'text-blue-300', width: 18, height: 26,
+                content: (id) => `
+                <div class="flex flex-col h-full bg-[#f0f0f0] p-2 gap-2 select-none">
+                    <div class="bg-white border-2 border-gray-400 p-4 text-right text-2xl font-mono h-16 flex items-center justify-end shadow-inner text-black" id="calc-display-${id}">0</div>
+                    <div class="grid grid-cols-4 gap-2 flex-1">
+                        <button onclick="calcApp.clear('${id}')" class="bg-red-400 hover:bg-red-500 text-white font-bold rounded shadow-md active:shadow-inner col-span-2">C</button>
+                        <button onclick="calcApp.backspace('${id}')" class="bg-orange-400 hover:bg-orange-500 text-white font-bold rounded shadow-md active:shadow-inner">←</button>
+                        <button onclick="calcApp.op('${id}', '/')" class="bg-gray-300 hover:bg-gray-400 text-black font-bold rounded shadow-md active:shadow-inner">/</button>
+                        <button onclick="calcApp.num('${id}', '7')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">7</button>
+                        <button onclick="calcApp.num('${id}', '8')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">8</button>
+                        <button onclick="calcApp.num('${id}', '9')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">9</button>
+                        <button onclick="calcApp.op('${id}', '*')" class="bg-gray-300 hover:bg-gray-400 text-black font-bold rounded shadow-md active:shadow-inner">×</button>
+                        <button onclick="calcApp.num('${id}', '4')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">4</button>
+                        <button onclick="calcApp.num('${id}', '5')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">5</button>
+                        <button onclick="calcApp.num('${id}', '6')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">6</button>
+                        <button onclick="calcApp.op('${id}', '-')" class="bg-gray-300 hover:bg-gray-400 text-black font-bold rounded shadow-md active:shadow-inner">−</button>
+                        <button onclick="calcApp.num('${id}', '1')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">1</button>
+                        <button onclick="calcApp.num('${id}', '2')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">2</button>
+                        <button onclick="calcApp.num('${id}', '3')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">3</button>
+                        <button onclick="calcApp.op('${id}', '+')" class="bg-gray-300 hover:bg-gray-400 text-black font-bold rounded shadow-md active:shadow-inner">+</button>
+                        <button onclick="calcApp.num('${id}', '0')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300 col-span-2">0</button>
+                        <button onclick="calcApp.num('${id}', '.')" class="bg-white hover:bg-gray-100 text-black font-bold rounded shadow-md active:shadow-inner border border-gray-300">.</button>
+                        <button onclick="calcApp.solve('${id}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold rounded shadow-md active:shadow-inner">=</button>
+                    </div>
+                </div>`
+            },
+            'word': {
+                id: 'word', name: 'Word Processor', icon: 'fa-solid fa-file-word', color: 'text-blue-600', width: 35, height: 28,
+                content: (id) => `
+                <div class="flex flex-col h-full bg-[#2b2b2b]">
+                    <div class="h-12 bg-[#2b2b2b] border-b border-white/10 flex items-center gap-2 px-4">
+                        <button onclick="document.getElementById('word-text-${id}').style.fontWeight = document.getElementById('word-text-${id}').style.fontWeight === 'bold' ? 'normal' : 'bold'" class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-xs font-bold">B</button>
+                        <button onclick="document.getElementById('word-text-${id}').style.fontStyle = document.getElementById('word-text-${id}').style.fontStyle === 'italic' ? 'normal' : 'italic'" class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-xs italic">I</button>
+                        <button onclick="document.getElementById('word-text-${id}').style.textDecoration = document.getElementById('word-text-${id}').style.textDecoration === 'underline' ? 'none' : 'underline'" class="px-3 py-1 bg-white/10 hover:bg-white/20 rounded text-xs underline">U</button>
+                        <div class="h-6 w-px bg-white/20"></div>
+                        <select onchange="document.getElementById('word-text-${id}').style.fontSize = this.value" class="px-2 py-1 bg-white/10 border border-white/20 rounded text-xs">
+                            <option value="12px">12</option>
+                            <option value="14px" selected>14</option>
+                            <option value="16px">16</option>
+                            <option value="18px">18</option>
+                            <option value="24px">24</option>
+                            <option value="32px">32</option>
+                        </select>
+                        <input type="color" onchange="document.getElementById('word-text-${id}').style.color = this.value" class="w-8 h-8 cursor-pointer border border-white/20 rounded">
+                    </div>
+                    <div class="flex-1 overflow-auto p-8 bg-[#1e1e1e]">
+                        <div id="word-text-${id}" contenteditable="true" class="bg-white text-black p-8 min-h-full shadow-lg outline-none" style="font-size: 14px;">
+                            Start typing your document here...
+                        </div>
+                    </div>
+                </div>`
+            }
         };
 
         class WindowManager {
             constructor() {
                 this.windows = {};
-                this.zIndex = 100;
+                this.zIndex = 10; // Base Z-Index for windows (Taskbar is 50)
                 this.windowArea = document.getElementById('window-area');
                 this.taskbarApps = document.getElementById('taskbar-apps');
             }
@@ -906,6 +1099,10 @@
                 
                 if (this.windows[winId]) {
                     this.bringToFront(winId);
+                    // If settings app, switch tab
+                    if(appId === 'settings' && extraData.tab) {
+                        settingsApp.switchTab(winId, extraData.tab);
+                    }
                     return;
                 }
 
@@ -947,6 +1144,10 @@
 
                 this.windows[winId] = { id: winId, element: el, minimized: false, maximized: false, prevRect: null };
                 this.addTaskbarItem(appId, winId);
+                
+                // If Chrome/Terminal, ensure initialization
+                if(appId === 'chrome') chromeApp.go(winId);
+                if(appId === 'terminal') terminalApp.init(winId);
             }
 
             closeWindow(id) {
@@ -955,7 +1156,6 @@
                 delete this.windows[id];
                 this.removeTaskbarItem(id);
                 
-                // Cleanup game logic
                 if(id === 'snake') {
                     clearInterval(snakeGame.interval);
                     if(snakeGame.inputHandler) document.removeEventListener('keydown', snakeGame.inputHandler);
@@ -1017,7 +1217,108 @@
 
         // --- Settings App Logic ---
         const settingsApp = {
-            render: (id, tab) => `<div class="flex h-full bg-[#f3f3f3] text-black p-8">Settings Content (Tab: ${tab}) - Scaling/Res implemented globally.</div>`
+            render: function(winId, tab) {
+                return `
+                    <div class="flex h-full bg-[#f3f3f3] text-black">
+                        <!-- Sidebar -->
+                        <div class="w-64 bg-[#f0f0f0] p-4 border-r border-gray-300 flex flex-col gap-1">
+                            <div class="font-bold text-lg mb-4 px-2">Settings</div>
+                            
+                            <div class="flex items-center gap-3 p-2 rounded ${tab === 'system' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'system')">
+                                <i class="fa-solid fa-desktop text-blue-500 w-5 text-center"></i> 
+                                <span class="text-sm">System</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-2 rounded ${tab === 'personalization' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'personalization')">
+                                <i class="fa-solid fa-paintbrush text-pink-500 w-5 text-center"></i> 
+                                <span class="text-sm">Personalization</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="flex-1 p-8 bg-[#f9f9f9] overflow-y-auto" id="settings-content-${winId}">
+                            ${this.getTabContent(tab)}
+                        </div>
+                    </div>
+                `;
+            },
+            getTabContent: function(tab) {
+                if (tab === 'system') {
+                    return `
+                        <h2 class="text-2xl font-semibold mb-6">System > Display</h2>
+                        
+                        <div class="bg-white p-4 rounded-lg border border-gray-200 mb-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <div class="font-medium">Scale</div>
+                                    <div class="text-xs text-gray-500">Change the size of text, apps, and other items</div>
+                                </div>
+                                <select class="bg-[#f3f3f3] border border-gray-300 rounded px-3 py-1 text-sm outline-none" onchange="sys.setScale(this.value)">
+                                    <option value="100">100% (Recommended)</option>
+                                    <option value="125">125%</option>
+                                    <option value="150">150%</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="font-medium">Display resolution</div>
+                                    <div class="text-xs text-gray-500">Adjust the resolution to fit your screen</div>
+                                </div>
+                                <select class="bg-[#f3f3f3] border border-gray-300 rounded px-3 py-1 text-sm outline-none" onchange="sys.setResolution(this.value)">
+                                    <option value="full">Full Screen (Recommended)</option>
+                                    <option value="1920x1080">1920 x 1080</option>
+                                    <option value="1280x720">1280 x 720</option>
+                                    <option value="1024x768">1024 x 768</option>
+                                </select>
+                            </div>
+                        </div>
+                         <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                            <div class="font-medium mb-2">Brightness</div>
+                            <input type="range" min="0" max="100" value="100" class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" oninput="sys.setBrightness(this.value)">
+                        </div>
+                    `;
+                } else if (tab === 'personalization') {
+                    const wallpapers = [
+                        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop', // Default Space
+                        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop', // Nature
+                        'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop', // Abstract
+                        'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?q=80&w=2070&auto=format&fit=crop', // Dark
+                        'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop', // Landscape
+                        'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1000&auto=format&fit=crop' // Pattern
+                    ];
+                    
+                    return `
+                        <h2 class="text-2xl font-semibold mb-6">Personalization > Background</h2>
+                        
+                        <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                             <div class="font-medium mb-4">Choose your picture</div>
+                             <div class="grid grid-cols-3 gap-4">
+                                ${wallpapers.map(url => `
+                                    <div class="aspect-video rounded-md overflow-hidden border-2 border-transparent hover:border-blue-500 cursor-pointer transition" onclick="sys.changeWallpaper('${url}')">
+                                        <img src="${url}" class="w-full h-full object-cover">
+                                    </div>
+                                `).join('')}
+                             </div>
+                        </div>
+                    `;
+                }
+            },
+            switchTab: function(winId, tab) {
+                const container = document.getElementById(`settings-content-${winId}`);
+                if (container) {
+                    container.innerHTML = this.getTabContent(tab);
+                    // Also update sidebar active state
+                    const win = document.getElementById(winId);
+                    const sidebarItems = win.querySelectorAll('.w-64 .flex');
+                    sidebarItems.forEach(item => {
+                        if(item.innerText.toLowerCase().includes(tab)) {
+                            item.className = "flex items-center gap-3 p-2 rounded bg-white shadow-sm cursor-pointer transition";
+                        } else {
+                            item.className = "flex items-center gap-3 p-2 rounded hover:bg-white/50 cursor-pointer transition";
+                        }
+                    });
+                }
+            }
         };
 
         // --- Sys Logic ---
@@ -1025,7 +1326,16 @@
             sortOrder: { by: 'name', asc: true },
             toggleStartMenu: () => {
                 const menu = document.getElementById('start-menu');
-                menu.style.bottom = menu.style.bottom === '3.5rem' ? '-40.625rem' : '3.5rem';
+                // Check if menu is currently open by checking if bottom is 3rem (48px taskbar height)
+                const isOpen = menu.style.bottom === '3rem' || menu.style.bottom === '48px';
+                
+                if (isOpen) {
+                    menu.style.bottom = '-40.625rem';
+                    menu.style.opacity = '0';
+                } else {
+                    menu.style.bottom = '3rem';
+                    menu.style.opacity = '1';
+                }
             },
             renderDesktop: () => {
                 const container = document.getElementById('desktop-icons');
@@ -1041,6 +1351,36 @@
                     container.appendChild(el);
                 });
             },
+            renderStartMenu: () => {
+                const grid = document.getElementById('start-menu-grid');
+                if (!grid) return;
+                
+                grid.innerHTML = '';
+                
+                // Define pinned apps from APPS config
+                const pinnedApps = [
+                    'explorer', 'terminal', 'chrome', 'notepad', 
+                    'pdf-viewer', 'paint', 'calculator', 'word',
+                    'snake', 'shooter', 'settings'
+                ];
+                
+                pinnedApps.forEach(appId => {
+                    const app = APPS[appId];
+                    if (!app) return;
+                    
+                    const el = document.createElement('div');
+                    el.className = 'flex flex-col items-center gap-2 p-3 hover:bg-white/10 rounded-lg cursor-pointer transition';
+                    el.innerHTML = `
+                        <i class="${app.icon} ${app.color} text-2xl"></i>
+                        <span class="text-xs text-center leading-tight">${app.name}</span>
+                    `;
+                    el.onclick = () => {
+                        wm.openWindow(appId);
+                        sys.toggleStartMenu();
+                    };
+                    grid.appendChild(el);
+                });
+            },
             initClock: () => {
                 setInterval(() => {
                     const now = new Date();
@@ -1049,6 +1389,42 @@
                 }, 1000);
             },
             sortDesktop: () => {} // Logic preserved from previous
+            ,changeWallpaper: (url) => {
+                const root = document.getElementById('ui-root');
+                root.style.backgroundImage = `url('${url}')`;
+            },
+            setScale: (val) => {
+                const baseSize = 16;
+                const newSize = baseSize * (parseInt(val) / 100);
+                document.documentElement.style.fontSize = `${newSize}px`;
+            },
+            setResolution: (val) => {
+                const root = document.getElementById('ui-root');
+                if (val === 'full') {
+                    root.style.width = '100%';
+                    root.style.height = '100%';
+                    root.style.border = 'none';
+                    root.style.transform = 'none';
+                    root.style.top = '0';
+                    root.style.borderRadius = '0';
+                } else {
+                    const [w, h] = val.split('x');
+                    root.style.width = `${w}px`;
+                    root.style.height = `${h}px`;
+                    root.style.border = '1px solid #333';
+                    root.style.borderRadius = '4px';
+                    root.style.position = 'relative';
+                    root.style.top = '50%';
+                    root.style.transform = 'translateY(-50%)';
+                    root.style.margin = '0 auto';
+                }
+            },
+            setBrightness: (val) => {
+                const overlay = document.getElementById('brightness-overlay');
+                const brightness = parseInt(val);
+                const opacity = (100 - brightness) / 100 * 0.8; 
+                overlay.style.opacity = opacity;
+            }
         };
 
         const contextMenu = { init: () => { /* ... logic preserved ... */ }};
@@ -1057,6 +1433,7 @@
         const wm = new WindowManager();
         sys.initClock();
         sys.renderDesktop();
+        sys.renderStartMenu();
         
         // Attach context menu listeners
         const desktop = document.getElementById('ui-root');
@@ -1069,7 +1446,24 @@
             menu.style.display = 'flex';
             menu.classList.remove('hidden');
         });
-        document.addEventListener('click', () => menu.style.display = 'none');
+        
+        // Updated click listener to fix "Start Menu stopped opening" bug
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('start-menu');
+            const startBtn = document.getElementById('start-btn'); // Specific ID targeting
+            
+            // Close logic: If menu is open AND click is outside menu AND click is outside start button
+            const isOpen = menu.style.bottom === '3rem' || menu.style.bottom === '48px';
+            if (isOpen) {
+                if (!menu.contains(e.target) && !startBtn.contains(e.target)) {
+                    sys.toggleStartMenu();
+                }
+            }
+            
+            // Always hide context menu on click
+            const ctxMenu = document.getElementById('context-menu');
+            if(ctxMenu) ctxMenu.style.display = 'none'; 
+        });
 
     </script>
 </body>
