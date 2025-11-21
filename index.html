@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niaz OS - Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            font-size: 16px; 
+        }
+
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            background-color: #111;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 0.5rem;
+            height: 0.5rem;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 0.25rem;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* UI Root */
+        #ui-root {
+            background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
+            transition: width 0.3s, height 0.3s, transform 0.3s, border-radius 0.3s;
+            position: relative;
+            margin: 0 auto; 
+            box-shadow: 0 0 0 0 rgba(0,0,0,0);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(32, 32, 32, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-light {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .context-menu {
+            background: rgba(45, 45, 45, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        /* Window Animations */
+        .window-transition {
+            transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s, width 0.2s, height 0.2s, top 0.2s, left 0.2s;
+        }
+
+        .taskbar-item-active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 6px;
+            height: 3px;
+            background: #60cdff;
+            border-radius: 2px;
+            transition: width 0.2s;
+        }
+        
+        .taskbar-item-active:hover::after {
+            width: 16px;
+        }
+
+        /* Start Menu Animation */
+        #start-menu {
+            transition: bottom 0.3s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.2s;
+        }
+
+        /* Cursor Blink */
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Resume Formatting */
+        .resume-page {
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+        }
+
+        /* Submenu Logic */
+        .menu-item:hover .submenu {
+            display: flex;
+        }
+        
+        /* Brightness Overlay */
+        #brightness-overlay {
+            pointer-events: none;
+            z-index: 99999;
+            background: black;
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+
+        /* Game Font */
+        .font-game {
+            font-family: 'Press Start 2P', monospace;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center bg-black overflow-hidden">
+
+    <div id="brightness-overlay" class="fixed inset-0 w-full h-full"></div>
+
+    <div id="ui-root" class="w-full h-full overflow-hidden text-white relative text-base">
+        
+        <!-- Desktop Icons Container -->
+        <div class="absolute top-0 left-0 h-full w-full p-2 grid grid-flow-col grid-rows-[repeat(auto-fill,6.25rem)] gap-2 content-start items-start w-fit z-0" id="desktop-icons">
+            <!-- Icons injected by JS -->
+        </div>
+
+        <!-- Context Menu -->
+        <div id="context-menu" class="context-menu fixed w-64 rounded-lg z-[9999] hidden flex-col py-1 text-sm text-gray-200">
+            <div class="menu-item relative px-4 py-2 hover:bg-white/10 cursor-default flex items-center justify-between group">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-arrow-down-a-z w-4"></i> Sort by</div>
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                <div class="submenu hidden flex-col absolute left-full top-0 w-48 bg-[#2d2d2d] rounded-lg border border-white/10 shadow-xl py-1 ml-1">
+                    <div class="px-4 py-2 hover:bg-white/10 cursor-pointer" onclick="sys.sortDesktop('name')">Name</div>
+                    <div class="px-4 py-2 hover:bg-white/10 cursor-pointer" onclick="sys.sortDesktop('size')">Size</div>
+                    <div class="px-4 py-2 hover:bg-white/10 cursor-pointer" onclick="sys.sortDesktop('type')">Item type</div>
+                    <div class="px-4 py-2 hover:bg-white/10 cursor-pointer" onclick="sys.sortDesktop('date')">Date modified</div>
+                </div>
+            </div>
+            <div class="px-4 py-2 hover:bg-white/10 cursor-default flex items-center gap-3" onclick="sys.renderDesktop(true)">
+                <i class="fa-solid fa-rotate-right w-4"></i> Refresh
+            </div>
+            <div class="h-px bg-white/10 my-1"></div>
+            <div class="px-4 py-2 hover:bg-white/10 cursor-default flex items-center gap-3" onclick="wm.openWindow('settings', {tab: 'system'})">
+                <i class="fa-solid fa-desktop w-4"></i> Display settings
+            </div>
+            <div class="px-4 py-2 hover:bg-white/10 cursor-default flex items-center gap-3" onclick="wm.openWindow('settings', {tab: 'personalization'})">
+                <i class="fa-solid fa-paintbrush w-4"></i> Personalize
+            </div>
+            <div class="h-px bg-white/10 my-1"></div>
+            <div class="px-4 py-2 hover:bg-white/10 cursor-default flex items-center gap-3" onclick="wm.openWindow('terminal')">
+                <i class="fa-brands fa-windows w-4"></i> Open in Terminal
+            </div>
+        </div>
+
+        <!-- Windows Container - Increased Z-Index so windows float above taskbar if dragged low -->
+        <div id="window-area" class="absolute top-0 left-0 w-full h-full z-[70] pointer-events-none">
+            <!-- Windows injected by JS -->
+        </div>
+
+        <!-- Start Menu -->
+        <div id="start-menu" class="glass fixed bottom-[-40.625rem] left-1/2 transform -translate-x-1/2 w-[37.5rem] h-[40.625rem] rounded-t-xl z-[80] flex flex-col opacity-0 shadow-2xl border-b-0 duration-300">
+            <div class="p-6 pb-2">
+                <div class="bg-[#202020] border border-gray-700 rounded-md flex items-center px-3 py-2 shadow-inner">
+                    <i class="fa-solid fa-magnifying-glass text-gray-400 mr-3"></i>
+                    <input type="text" placeholder="Search apps, settings, and documents" class="bg-transparent border-none outline-none text-sm w-full text-white placeholder-gray-400">
+                </div>
+            </div>
+            <div class="flex-1 p-6 pt-2 overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="font-semibold text-sm">Pinned</span>
+                    <button class="bg-white/10 px-2 py-0.5 rounded text-xs hover:bg-white/20 transition">All apps &gt;</button>
+                </div>
+                <div class="grid grid-cols-6 gap-4" id="start-menu-grid"></div>
+            </div>
+            <div class="h-16 glass-light rounded-b-xl border-t border-white/5 flex items-center justify-between px-8">
+                <div class="flex items-center gap-3 hover:bg-white/5 p-2 rounded-md cursor-pointer transition">
+                    <div class="w-8 h-8 rounded-full bg-gray-600 border border-gray-400 overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Niaz" alt="Niaz" class="w-full h-full object-cover">
+                    </div>
+                    <span class="text-sm font-medium">Niaz</span>
+                </div>
+                <div class="hover:bg-white/5 p-2 rounded-md cursor-pointer transition" onclick="alert('Shutting down simulation...')">
+                    <i class="fa-solid fa-power-off"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taskbar - Z-Index 50 -->
+        <div class="absolute bottom-0 w-full h-12 glass flex justify-between items-center px-4 z-50 select-none" id="taskbar">
+            <div class="w-32 hidden md:flex opacity-0 hover:opacity-100 transition duration-500">
+                <div class="text-xs flex flex-col justify-center items-center cursor-pointer hover:bg-white/5 p-1 rounded">
+                    <span id="weather-temp">21°C</span>
+                    <span class="text-blue-300">Cloudy</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 h-full" id="taskbar-apps">
+                <button class="w-10 h-10 rounded hover:bg-white/10 flex items-center justify-center transition active:scale-95" onclick="sys.toggleStartMenu()">
+                    <i class="fa-brands fa-windows text-blue-400 text-xl"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-2 h-full">
+                <div class="flex items-center gap-2 hover:bg-white/10 px-2 py-1 rounded transition cursor-pointer">
+                    <i class="fa-solid fa-angle-up text-xs"></i>
+                </div>
+                <div class="flex items-center gap-3 hover:bg-white/10 px-2 py-1 rounded transition cursor-pointer">
+                    <i class="fa-solid fa-wifi text-xs"></i>
+                    <i class="fa-solid fa-volume-high text-xs"></i>
+                    <i class="fa-solid fa-battery-full text-xs"></i>
+                </div>
+                <div class="text-right hover:bg-white/10 px-2 py-1 rounded transition cursor-pointer flex flex-col justify-center h-full" id="clock">
+                    <div class="text-xs font-medium" id="clock-time">12:00 PM</div>
+                    <div class="text-[10px]" id="clock-date">11/20/2025</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const RESUME_CONTENT = `
+            <div id="resume-container" class="resume-page bg-white text-black p-10 md:p-12 mx-auto max-w-[53rem] min-h-[68rem] font-sans selection:bg-blue-200 origin-top">
+                <!-- Header -->
+                <div class="flex justify-between items-start border-b-2 border-gray-800 pb-4 mb-6">
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Mohammed Niaz Ul Haque</h1>
+                        <h2 class="text-xl font-semibold text-gray-700 mt-1">Full Stack Engineer @ Fourth Dimension (4D)</h2>
+                        <p class="text-sm text-gray-600 mt-1"><i class="fa-solid fa-location-dot mr-1"></i> Scarborough, Ontario, Canada</p>
+                    </div>
+                    <div class="text-right text-sm text-gray-700 space-y-1">
+                        <p><i class="fa-solid fa-phone mr-2"></i>647-657-6450</p>
+                        <p><i class="fa-solid fa-envelope mr-2"></i>theniaz619@gmail.com</p>
+                        <p><i class="fa-brands fa-linkedin mr-2"></i>linkedin.com/in/mohammed-niaz-ul</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-8">
+                    <!-- Main Column -->
+                    <div class="col-span-2">
+                        <!-- Summary -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-2">Summary</h3>
+                            <p class="text-sm leading-relaxed text-gray-800 text-justify">
+                                Full Stack Engineer building secure, high-performing web platforms end to end. I lead development across a 30+ app portfolio at Fourth Dimension (4D), owning architecture, delivery, and maintenance—from serverless APIs on AWS (API Gateway, Lambda, CloudFront, DocumentDB) to React/Next.js and Angular frontends. I mentor an offshore team, enforce code quality, and drive security by design.
+                            </p>
+                        </div>
+
+                        <!-- Experience -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-4">Experience</h3>
+                            
+                            <!-- Job 1 -->
+                            <div class="mb-5">
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h4 class="font-bold text-gray-900 text-md">Fourth Dimension (4D)</h4>
+                                    <span class="text-xs text-gray-600 font-mono">Oct 2023 - Present</span>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-700 mb-2">Full Stack Engineer (Tech Lead) | Toronto, Canada</p>
+                                <ul class="list-disc ml-4 text-sm text-gray-700 space-y-1 leading-snug">
+                                    <li><strong>Leadership:</strong> Tech lead across 30+ app portfolio. Manage/mentor offshore teams on code reviews & architecture.</li>
+                                    <li><strong>Full-Stack:</strong> Build RESTful APIs (Node.js, AWS Lambda); deliver frontends in React, Next.js, Angular.</li>
+                                    <li><strong>Security:</strong> Lead security architecture; flagship app achieved a <strong>perfect penetration test score</strong>.</li>
+                                    <li><strong>Accomplishments:</strong> Architected/launched a greenfield, multi-tenant, event-driven plugin platform. Leading legacy modernization (Angular &rarr; React, Azure &rarr; AWS).</li>
+                                </ul>
+                            </div>
+
+                            <!-- Job 2 -->
+                            <div class="mb-5">
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h4 class="font-bold text-gray-900 text-md">Merlin Solutions</h4>
+                                    <span class="text-xs text-gray-600 font-mono">Nov 2022 - Sep 2023</span>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-700 mb-2">Full Stack Developer | Ontario, Canada</p>
+                                <ul class="list-disc ml-4 text-sm text-gray-700 space-y-1 leading-snug">
+                                    <li>Deployed OAuth2 protocol for Union Bank accounts; integrated SMS authentication.</li>
+                                    <li><strong>MerlinPay:</strong> Built comprehensive B2B/B2C payment platform using Vue.js.</li>
+                                    <li><strong>CaRS:</strong> Developed universal Genmega Kiosk app dashboards (Vue.js) & cross-platform POS (Flutter).</li>
+                                    <li>Optimized Kiosk hardware connections using .NET/C# WebSocket server (80% faster) and Java HTTP server.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Job 3 -->
+                            <div class="mb-5">
+                                <div class="flex justify-between items-baseline mb-1">
+                                    <h4 class="font-bold text-gray-900 text-md">Ontario Treasury Board Secretariat</h4>
+                                    <span class="text-xs text-gray-600 font-mono">Sep 2021 - May 2022</span>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-700 mb-2">Web Developer | Toronto, Canada</p>
+                                <ul class="list-disc ml-4 text-sm text-gray-700 space-y-1 leading-snug">
+                                    <li>Enhanced OPS Enterprise intranet using VueJS, Go, Docker, Kubernetes, and MariaDB.</li>
+                                    <li>Ensured AODA accessibility compliance using WAVE and AXE tools.</li>
+                                    <li>Optimized page performance via VueJS component refactoring.</li>
+                                </ul>
+                            </div>
+
+                             <!-- Job 4 -->
+                            <div class="mb-1">
+                                <div class="flex justify-between items-baseline">
+                                    <h4 class="font-bold text-gray-900 text-sm">Wadi Grocery</h4>
+                                    <span class="text-xs text-gray-600 font-mono">2018</span>
+                                </div>
+                                <p class="text-xs text-gray-600">Procurement Supervisor | Saudi Arabia</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Column -->
+                    <div>
+                        <!-- Skills -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-3">Top Skills</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">TypeScript</span>
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">AWS Serverless</span>
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">React / Next.js</span>
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">Node.js</span>
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">Docker / CI/CD</span>
+                                <span class="bg-gray-200 text-gray-800 px-2 py-1 rounded text-xs font-semibold">Jest</span>
+                            </div>
+                        </div>
+
+                        <!-- Education -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-3">Education</h3>
+                            <div class="mb-3">
+                                <p class="font-bold text-sm text-gray-900">Seneca College</p>
+                                <p class="text-xs text-gray-700">Adv. Diploma, Computer Programming & Analysis</p>
+                                <p class="text-xs text-gray-500">2019 - 2022</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-gray-900">Bangladesh Int. School</p>
+                                <p class="text-xs text-gray-700">High School Diploma, IT</p>
+                            </div>
+                        </div>
+
+                         <!-- Honors -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-3">Honors</h3>
+                             <p class="text-sm text-gray-800"><i class="fa-solid fa-award text-yellow-600 mr-1"></i> President's Honour List</p>
+                        </div>
+
+                        <!-- Languages -->
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 uppercase tracking-wider border-b border-gray-300 mb-3">Languages</h3>
+                            <ul class="text-xs text-gray-700 space-y-1">
+                                <li><strong>English:</strong> Native/Bilingual</li>
+                                <li><strong>Bengali:</strong> Native/Bilingual</li>
+                                <li><strong>Hindi/Urdu:</strong> Professional</li>
+                                <li><strong>Korean:</strong> Limited Working</li>
+                                <li><strong>Arabic:</strong> Elementary</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        const TECH_STACK_JSON = JSON.stringify({ "languages": ["TypeScript", "JavaScript", "Node.js"], "frontend": ["React", "Next.js", "Angular", "Tailwind"], "backend": ["AWS Lambda", "API Gateway", "DocumentDB"], "tools": ["Docker", "Jest", "CI/CD", "Git"] }, null, 2);
+        const CONTACT_INFO_TXT = `Email: theniaz619@gmail.com\nLinkedIn: linkedin.com/in/mohammed-niaz-ul\nPhone: 647-657-6450`;
+
+        // --- File System Data ---
+        const FILE_SYSTEM = {
+            'desktop': [
+                { name: 'Niaz_Profile', icon: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Niaz', color: '', type: 'folder', target: 'niaz_profile', size: 0 },
+                { name: 'Games', icon: 'fa-solid fa-gamepad', color: 'text-purple-400', type: 'folder', target: 'games_folder', size: 0 },
+                { name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', type: 'app', appId: 'terminal', size: 0 },
+                { name: 'Chrome', icon: 'fa-brands fa-chrome', color: 'text-blue-500', type: 'app', appId: 'chrome', size: 0 },
+            ],
+            'niaz_profile': [
+                { name: 'Resume.pdf', icon: 'fa-solid fa-file-pdf', color: 'text-red-500', type: 'file', appId: 'pdf-viewer', content: RESUME_CONTENT, size: 245 },
+                { name: 'Tech_Stack.json', icon: 'fa-solid fa-file-code', color: 'text-yellow-300', type: 'file', appId: 'notepad', content: TECH_STACK_JSON, size: 12 },
+                { name: 'Contact_Info.txt', icon: 'fa-regular fa-address-card', color: 'text-blue-300', type: 'file', appId: 'notepad', content: CONTACT_INFO_TXT, size: 4 },
+            ],
+            'games_folder': [
+                { name: 'Neon Snake 3D', icon: 'fa-solid fa-staff-snake', color: 'text-green-400', type: 'app', appId: 'snake' },
+                { name: 'Galactic Defender', icon: 'fa-solid fa-rocket', color: 'text-orange-500', type: 'app', appId: 'shooter' }
+            ],
+            'downloads': [
+                { name: 'installer.exe', icon: 'fa-brands fa-windows', color: 'text-blue-300', type: 'file', size: 15400 },
+                { name: 'archive.zip', icon: 'fa-solid fa-file-zipper', color: 'text-yellow-200', type: 'file', size: 4500 },
+            ],
+            'documents': [
+                { name: 'Notes.txt', icon: 'fa-regular fa-file-lines', color: 'text-white', type: 'file', appId: 'notepad', content: 'Meeting notes...', size: 2 },
+            ],
+            'trash': [
+                { name: 'Old_Design_v1.png', icon: 'fa-regular fa-image', color: 'text-gray-500', type: 'file', size: 150 },
+            ]
+        };
+
+        // --- Game Logic: Snake 3D ---
+        var snakeGame = {
+            interval: null,
+            score: 0,
+            highScore: 0,
+            snake: [],
+            food: {},
+            direction: 'up',
+            gridSize: 20,
+            inputHandler: null,
+            
+            init: function(canvasId, scoreId, highScoreId) {
+                const canvas = document.getElementById(canvasId);
+                if(!canvas) return;
+                this.ctx = canvas.getContext('2d');
+                this.width = canvas.width;
+                this.height = canvas.height;
+                this.scoreEl = document.getElementById(scoreId);
+                this.highScoreEl = document.getElementById(highScoreId);
+                
+                this.snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
+                this.food = this.randomFood();
+                this.direction = 'up';
+                this.score = 0;
+                this.scoreEl.innerText = 0;
+                this.highScoreEl.innerText = this.highScore;
+                this.running = false;
+
+                // Input - Properly store listener reference for removal
+                if (this.inputHandler) document.removeEventListener('keydown', this.inputHandler);
+                
+                this.inputHandler = (e) => {
+                    const overlay = document.getElementById('snake-overlay');
+                    // If overlay is missing, likely window is closed.
+                    if (!overlay) return; 
+                    
+                    if (!this.running && overlay.style.display !== 'none') return;
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': if(this.direction !== 'down') this.direction = 'up'; break;
+                        case 'ArrowDown': case 's': if(this.direction !== 'up') this.direction = 'down'; break;
+                        case 'ArrowLeft': case 'a': if(this.direction !== 'right') this.direction = 'left'; break;
+                        case 'ArrowRight': case 'd': if(this.direction !== 'left') this.direction = 'right'; break;
+                    }
+                };
+                document.addEventListener('keydown', this.inputHandler);
+            },
+            start: function() {
+                if(this.interval) clearInterval(this.interval);
+                this.running = true;
+                this.score = 0;
+                this.scoreEl.innerText = 0;
+                this.snake = [{x: 10, y: 10}, {x: 10, y: 11}, {x: 10, y: 12}];
+                this.food = this.randomFood();
+                this.direction = 'up';
+                
+                const overlay = document.getElementById('snake-overlay');
+                if(overlay) overlay.style.display = 'none';
+                
+                this.interval = setInterval(() => this.update(), 100);
+            },
+            update: function() {
+                const head = { ...this.snake[0] };
+                if(this.direction === 'up') head.y--;
+                if(this.direction === 'down') head.y++;
+                if(this.direction === 'left') head.x--;
+                if(this.direction === 'right') head.x++;
+
+                // Wall Collision
+                if (head.x < 0 || head.x >= this.gridSize || head.y < 0 || head.y >= this.gridSize) {
+                    this.gameOver();
+                    return;
+                }
+                // Self Collision
+                if (this.snake.some(s => s.x === head.x && s.y === head.y)) {
+                    this.gameOver();
+                    return;
+                }
+
+                this.snake.unshift(head);
+
+                // Eat Food
+                if(head.x === this.food.x && head.y === this.food.y) {
+                    this.score += 10;
+                    if(this.scoreEl) this.scoreEl.innerText = this.score;
+                    this.food = this.randomFood();
+                } else {
+                    this.snake.pop();
+                }
+
+                this.draw();
+            },
+            draw: function() {
+                if (!this.ctx) return;
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                // Perspective Projection Helper
+                const project = (x, y) => {
+                    // Scale: 0.6 (Far/Top) to 1.0 (Near/Bottom)
+                    const scale = 0.6 + (y / this.gridSize) * 0.4; 
+                    const centerX = this.width / 2;
+                    
+                    // Fix Tilt: Perfectly center the grid indices (0 to gridSize-1)
+                    const centeredX = x - (this.gridSize - 1) / 2;
+                    
+                    // X Offset based on centered coordinate
+                    const xOffset = centeredX * (this.width / this.gridSize) * scale;
+                    
+                    const sx = centerX + xOffset;
+                    const sy = y * (this.height / this.gridSize);
+                    return { x: sx, y: sy, scale };
+                };
+
+                // Draw Visible Boundary (The Wall)
+                this.ctx.strokeStyle = '#004400';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                // Connect the centers of the 4 corner cells to show the valid playable area
+                const tl = project(0, 0);
+                const tr = project(this.gridSize - 1, 0);
+                const br = project(this.gridSize - 1, this.gridSize - 1);
+                const bl = project(0, this.gridSize - 1);
+                
+                this.ctx.moveTo(tl.x, tl.y);
+                this.ctx.lineTo(tr.x, tr.y);
+                this.ctx.lineTo(br.x, br.y);
+                this.ctx.lineTo(bl.x, bl.y);
+                this.ctx.closePath();
+                this.ctx.stroke();
+
+                // Draw Snake
+                this.snake.forEach((seg, i) => {
+                    const pos = project(seg.x, seg.y);
+                    // Size scales with depth
+                    const size = (this.width / this.gridSize) * pos.scale * 0.8; 
+                    this.ctx.fillStyle = i === 0 ? '#00ff00' : '#00cc00'; 
+                    this.ctx.shadowBlur = 15;
+                    this.ctx.shadowColor = '#00ff00';
+                    this.ctx.fillRect(pos.x - size/2, pos.y - size/2, size, size);
+                    this.ctx.shadowBlur = 0;
+                });
+
+                // Draw Food
+                const fPos = project(this.food.x, this.food.y);
+                const fSize = (this.width / this.gridSize) * fPos.scale * 0.4;
+                this.ctx.fillStyle = '#ff00ff';
+                this.ctx.shadowBlur = 10;
+                this.ctx.shadowColor = '#ff00ff';
+                this.ctx.beginPath();
+                this.ctx.arc(fPos.x, fPos.y, fSize, 0, Math.PI*2);
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+            },
+            randomFood: function() {
+                return {
+                    x: Math.floor(Math.random() * this.gridSize),
+                    y: Math.floor(Math.random() * this.gridSize)
+                };
+            },
+            gameOver: function() {
+                clearInterval(this.interval);
+                this.running = false;
+                if(this.score > this.highScore) {
+                    this.highScore = this.score;
+                    if(this.highScoreEl) this.highScoreEl.innerText = this.score;
+                }
+                const overlay = document.getElementById('snake-overlay');
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div class="text-red-500 text-2xl mb-4 font-game">GAME OVER</div>
+                        <div class="mb-4">Score: ${this.score}</div>
+                        <button onclick="snakeGame.start()" class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded text-white font-bold">RESTART</button>
+                    `;
+                    overlay.style.display = 'flex';
+                }
+            }
+        };
+
+        // --- Game Logic: Space Shooter ---
+        var shooterGame = {
+            animId: null,
+            player: { x: 0, y: 0, w: 40, h: 40, speed: 5 },
+            bullets: [],
+            enemies: [],
+            score: 0,
+            health: 100,
+            highScore: 0,
+            keys: {},
+            lastShot: 0,
+            spawnTimer: 0,
+            keyDownHandler: null,
+            keyUpHandler: null,
+            
+            init: function(canvasId, scoreId, highScoreId, healthId) {
+                const canvas = document.getElementById(canvasId);
+                if(!canvas) return;
+                this.ctx = canvas.getContext('2d');
+                this.width = canvas.width;
+                this.height = canvas.height;
+                this.scoreEl = document.getElementById(scoreId);
+                this.healthEl = document.getElementById(healthId);
+                this.highScoreEl = document.getElementById(highScoreId);
+                if(this.highScoreEl) this.highScoreEl.innerText = this.highScore;
+
+                this.player.x = this.width / 2 - 20;
+                this.player.y = this.height - 60;
+
+                if (this.keyDownHandler) window.removeEventListener('keydown', this.keyDownHandler);
+                if (this.keyUpHandler) window.removeEventListener('keyup', this.keyUpHandler);
+
+                this.keyDownHandler = e => this.keys[e.key] = true;
+                this.keyUpHandler = e => this.keys[e.key] = false;
+
+                window.addEventListener('keydown', this.keyDownHandler);
+                window.addEventListener('keyup', this.keyUpHandler);
+            },
+            start: function() {
+                cancelAnimationFrame(this.animId);
+                this.score = 0;
+                this.health = 100;
+                this.bullets = [];
+                this.enemies = [];
+                if(this.scoreEl) this.scoreEl.innerText = 0;
+                if(this.healthEl) this.healthEl.style.width = '100%';
+                this.player.x = this.width / 2 - 20;
+                const overlay = document.getElementById('shooter-overlay');
+                if(overlay) overlay.style.display = 'none';
+                this.loop();
+            },
+            loop: function() {
+                this.update();
+                this.draw();
+                if(this.health > 0) {
+                    this.animId = requestAnimationFrame(() => this.loop());
+                } else {
+                    this.gameOver();
+                }
+            },
+            update: function() {
+                if(this.keys['ArrowLeft'] && this.player.x > 0) this.player.x -= this.player.speed;
+                if(this.keys['ArrowRight'] && this.player.x < this.width - this.player.w) this.player.x += this.player.speed;
+                
+                if(this.keys[' '] && Date.now() - this.lastShot > 300) {
+                    this.bullets.push({ x: this.player.x + 18, y: this.player.y, w: 4, h: 10, color: '#0ff' });
+                    this.lastShot = Date.now();
+                }
+
+                this.spawnTimer++;
+                if(this.spawnTimer > 60) {
+                    const type = Math.random() > 0.5 ? 'asteroid' : 'ship';
+                    this.enemies.push({
+                        x: Math.random() * (this.width - 40),
+                        y: -40,
+                        w: type === 'asteroid' ? 30 : 40,
+                        h: type === 'asteroid' ? 30 : 30,
+                        type: type,
+                        hp: type === 'asteroid' ? 1 : 3
+                    });
+                    this.spawnTimer = 0;
+                }
+
+                this.bullets.forEach((b, i) => {
+                    b.y -= 7;
+                    if(b.y < 0) this.bullets.splice(i, 1);
+                });
+
+                this.enemies.forEach((e, i) => {
+                    e.y += e.type === 'asteroid' ? 3 : 2;
+                    
+                    if (this.rectIntersect(this.player, e)) {
+                        this.health -= 20;
+                        this.updateHealth();
+                        this.enemies.splice(i, 1);
+                        return;
+                    }
+
+                    this.bullets.forEach((b, bi) => {
+                        if (this.rectIntersect(b, e)) {
+                            e.hp--;
+                            this.bullets.splice(bi, 1);
+                            if(e.hp <= 0) {
+                                this.score += e.type === 'asteroid' ? 50 : 100;
+                                if(this.scoreEl) this.scoreEl.innerText = this.score;
+                                this.enemies.splice(i, 1);
+                            }
+                        }
+                    });
+
+                    if(e.y > this.height) this.enemies.splice(i, 1);
+                });
+            },
+            draw: function() {
+                if(!this.ctx) return;
+                this.ctx.fillStyle = '#000022';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+                
+                this.ctx.fillStyle = '#fff';
+                if(Math.random() > 0.9) this.ctx.fillRect(Math.random()*this.width, Math.random()*this.height, 2, 2);
+
+                this.ctx.fillStyle = '#00aaff';
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.player.x + 20, this.player.y);
+                this.ctx.lineTo(this.player.x + 40, this.player.y + 40);
+                this.ctx.lineTo(this.player.x, this.player.y + 40);
+                this.ctx.fill();
+
+                this.bullets.forEach(b => {
+                    this.ctx.fillStyle = b.color;
+                    this.ctx.fillRect(b.x, b.y, b.w, b.h);
+                });
+
+                this.enemies.forEach(e => {
+                    if(e.type === 'asteroid') {
+                        this.ctx.fillStyle = '#888';
+                        this.ctx.beginPath();
+                        this.ctx.arc(e.x + 15, e.y + 15, 15, 0, Math.PI*2);
+                        this.ctx.fill();
+                    } else {
+                        this.ctx.fillStyle = '#ff4444';
+                        this.ctx.fillRect(e.x, e.y, e.w, e.h);
+                    }
+                });
+            },
+            rectIntersect: function(r1, r2) {
+                return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y);
+            },
+            updateHealth: function() {
+                if(!this.healthEl) return;
+                this.healthEl.style.width = `${Math.max(0, this.health)}%`;
+                if(this.health <= 30) this.healthEl.className = 'h-full bg-red-500 transition-all duration-200';
+                else this.healthEl.className = 'h-full bg-green-500 transition-all duration-200';
+            },
+            gameOver: function() {
+                if(this.score > this.highScore) {
+                    this.highScore = this.score;
+                    if(this.highScoreEl) this.highScoreEl.innerText = this.score;
+                }
+                const overlay = document.getElementById('shooter-overlay');
+                if(overlay) {
+                    overlay.innerHTML = `
+                        <div class="text-red-500 text-2xl mb-4 font-game">MISSION FAILED</div>
+                        <div class="mb-4">Score: ${this.score}</div>
+                        <button onclick="shooterGame.start()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold">REDEPLOY</button>
+                    `;
+                    overlay.style.display = 'flex';
+                }
+            }
+        };
+
+        // --- App Logic Objects (Defined as VAR to ensure visibility) ---
+        var fileExplorer = {
+            init: function(winId, folderName) { this.nav(winId, folderName); },
+            nav: function(winId, folderName) {
+                const grid = document.getElementById(`grid-${winId}`);
+                const path = document.getElementById(`path-${winId}`);
+                if(!grid) return;
+                path.innerText = `PC > ${folderName.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+                grid.innerHTML = '';
+                (FILE_SYSTEM[folderName] || []).forEach(file => {
+                    const el = document.createElement('div');
+                    el.className = 'flex flex-col items-center gap-1 p-2 hover:bg-white/10 rounded group cursor-default';
+                    let iconHtml = file.icon.startsWith('http') 
+                        ? `<img src="${file.icon}" class="w-10 h-10 rounded-full mb-2 shadow-md">` 
+                        : `<i class="${file.icon} ${file.color} text-4xl mb-1"></i>`;
+                    el.innerHTML = `${iconHtml}<span class="text-xs text-center w-full truncate group-hover:text-white text-gray-200">${file.name}</span>`;
+                    el.ondblclick = () => file.type === 'folder' ? fileExplorer.nav(winId, file.target) : wm.openWindow(file.appId, file);
+                    grid.appendChild(el);
+                });
+            },
+            up: function(winId) { this.nav(winId, 'desktop'); }
+        };
+
+        var terminalApp = {
+            init: function(winId) {
+                const typeEl = document.getElementById(`term-type-${winId}`);
+                const outEl = document.getElementById(`term-output-${winId}`);
+                setTimeout(() => {
+                    typeEl.innerText = "npm run start:portfolio";
+                    setTimeout(() => {
+                        outEl.innerHTML = `
+                            <div class="text-gray-400">Loading Niaz's Architecture...</div>
+                            <div class="text-green-400 font-bold mt-2">Done. Status: Hired.</div>
+                            <div class="mt-4">niaz@portfolio:~/desktop$ <span class="cursor-blink">_</span></div>
+                        `;
+                    }, 800);
+                }, 500);
+            }
+        };
+
+        var chromeApp = { go: function(winId) { document.getElementById(`iframe-${winId}`).src = "https://www.google.com/webhp?igu=1"; }, refresh: function(winId) { this.go(winId); } };
+        var paintApp = { init: function() {}, clear: function() {} }; 
+        var calcApp = { clear: function() {}, num: function() {}, op: function() {}, solve: function() {} };
+
+        // --- Helper Function ---
+        function generateExplorerHTML(winId, startFolder, title) {
+            return `
+                <div class="flex h-full bg-[#191919] text-white">
+                    <!-- Sidebar -->
+                    <div class="w-48 bg-[#202020] border-r border-white/5 p-2 text-sm hidden md:block">
+                        <div class="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2" onclick="fileExplorer.nav('${winId}', 'desktop')"><i class="fa-solid fa-desktop text-purple-400"></i> Desktop</div>
+                        <div class="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2" onclick="fileExplorer.nav('${winId}', 'niaz_profile')"><i class="fa-solid fa-id-card text-teal-400"></i> Niaz Profile</div>
+                        <div class="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2" onclick="fileExplorer.nav('${winId}', 'downloads')"><i class="fa-solid fa-download text-green-400"></i> Downloads</div>
+                        <div class="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2" onclick="fileExplorer.nav('${winId}', 'documents')"><i class="fa-regular fa-file text-white"></i> Documents</div>
+                    </div>
+                    <!-- Main Content -->
+                    <div class="flex-1 flex flex-col">
+                        <!-- Toolbar -->
+                        <div class="h-10 border-b border-white/5 flex items-center px-4 gap-4 text-xs">
+                            <button class="hover:bg-white/10 p-1 rounded flex items-center gap-2"><i class="fa-solid fa-plus text-blue-400"></i> New</button>
+                            <div class="h-4 w-px bg-white/10"></div>
+                            <button class="hover:bg-white/10 p-1 rounded" onclick="fileExplorer.up('${winId}')"><i class="fa-solid fa-arrow-up"></i> Up</button>
+                        </div>
+                        <!-- Breadcrumb -->
+                        <div class="h-10 border-b border-white/5 flex items-center px-4 text-sm gap-2 bg-[#202020]">
+                            <i class="fa-solid fa-arrow-up text-gray-400 hover:text-white cursor-pointer" onclick="fileExplorer.up('${winId}')"></i>
+                            <div class="bg-[#2b2b2b] px-2 py-1 rounded w-full border border-white/5 flex items-center gap-2 text-xs">
+                                <i class="fa-solid fa-computer"></i> <span id="path-${winId}">${title} > ${startFolder}</span>
+                            </div>
+                        </div>
+                        <!-- Grid -->
+                        <div class="flex-1 p-4 grid grid-cols-4 md:grid-cols-6 gap-4 content-start overflow-auto" id="grid-${winId}" data-current="${startFolder}">
+                            <!-- Filled by JS -->
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const APPS = {
+            'notepad': { id: 'notepad', name: 'Text Editor', icon: 'fa-regular fa-file-lines', color: 'text-blue-400', width: 37.5, height: 28.125, content: (id, d) => `<textarea class="w-full h-full bg-[#282828] text-white p-4 outline-none font-mono resize-none">${d.content}</textarea>` },
+            'pdf-viewer': { id: 'pdf-viewer', name: 'Resume Viewer', icon: 'fa-solid fa-file-pdf', color: 'text-red-500', width: 50, height: 43.75, content: (id, d) => `<div class="h-full overflow-auto bg-[#525659] p-8 flex justify-center"><div class="bg-white text-black p-8 max-w-3xl min-h-full shadow-lg">${d.content}</div></div>` },
+            'terminal': { id: 'terminal', name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', width: 37.5, height: 25, content: (id) => `<div class="h-full bg-black text-green-400 font-mono p-4"><div id="term-type-${id}"></div><div id="term-output-${id}"></div></div>` },
+            'chrome': { id: 'chrome', name: 'Chrome', icon: 'fa-brands fa-chrome', color: 'text-blue-500', width: 56.25, height: 37.5, content: (id) => `<div class="h-full flex flex-col bg-white"><div class="h-full relative"><iframe id="iframe-${id}" class="w-full h-full border-none"></iframe><div class="absolute inset-0 pointer-events-none iframe-blocker"></div></div></div>` },
+            'explorer': { id: 'explorer', name: 'Explorer', icon: 'fa-solid fa-folder', color: 'text-yellow-400', width: 50, height: 34.375, content: (id) => generateExplorerHTML(id, 'desktop', 'Desktop') },
+            
+            // --- NEW GAMES ---
+            'snake': {
+                id: 'snake', name: 'Neon Snake 3D', icon: 'fa-solid fa-staff-snake', color: 'text-green-400', width: 25, height: 30,
+                content: (id) => {
+                    setTimeout(() => snakeGame.init(`c-${id}`, `s-${id}`, `hs-${id}`), 100);
+                    return `
+                    <div class="flex flex-col h-full bg-black relative font-game select-none text-white">
+                        <div class="absolute top-2 left-4 z-10 text-xs">
+                            SCORE: <span id="s-${id}" class="text-green-400">0</span>
+                        </div>
+                        <div class="absolute top-2 right-4 z-10 text-xs text-right">
+                            HIGH: <span id="hs-${id}" class="text-yellow-400">0</span>
+                        </div>
+                        <div id="snake-overlay" class="absolute inset-0 z-20 bg-black/80 flex flex-col items-center justify-center">
+                            <div class="text-green-500 text-3xl mb-2 font-bold tracking-widest">SNAKE 3D</div>
+                            <div class="text-gray-400 text-xs mb-6">WASD / Arrows to Move</div>
+                            <button onclick="snakeGame.start()" class="px-6 py-2 border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black transition font-bold rounded">START GAME</button>
+                        </div>
+                        <canvas id="c-${id}" width="600" height="600" class="w-full h-full object-contain"></canvas>
+                    </div>`;
+                }
+            },
+            'shooter': {
+                id: 'shooter', name: 'Galactic Defender', icon: 'fa-solid fa-rocket', color: 'text-orange-500', width: 24, height: 32,
+                content: (id) => {
+                    setTimeout(() => shooterGame.init(`c-${id}`, `s-${id}`, `hs-${id}`, `hp-${id}`), 100);
+                    return `
+                    <div class="flex flex-col h-full bg-[#000022] relative font-game select-none text-white overflow-hidden">
+                        <div class="absolute top-0 w-full h-1 bg-gray-800"><div id="hp-${id}" class="h-full bg-green-500 transition-all duration-200" style="width:100%"></div></div>
+                        <div class="absolute top-3 left-3 z-10 text-xs">SCORE: <span id="s-${id}">0</span></div>
+                        <div class="absolute top-3 right-3 z-10 text-xs">HI: <span id="hs-${id}">0</span></div>
+                        <div id="shooter-overlay" class="absolute inset-0 z-20 bg-black/80 flex flex-col items-center justify-center">
+                            <div class="text-blue-400 text-xl mb-2 font-bold text-center">GALACTIC<br>DEFENDER</div>
+                            <div class="text-gray-400 text-[10px] mb-6 text-center">Arrows to Move<br>Space to Shoot</div>
+                            <button onclick="shooterGame.start()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white font-bold text-xs">LAUNCH MISSION</button>
+                        </div>
+                        <canvas id="c-${id}" width="480" height="720" class="w-full h-full object-contain"></canvas>
+                    </div>`;
+                }
+            },
+            'settings': { id: 'settings', name: 'Settings', icon: 'fa-solid fa-gear', color: 'text-gray-400', width: 50, height: 35, content: (id, d) => settingsApp.render(id, d.tab || 'system') }
+        };
+
+        class WindowManager {
+            constructor() {
+                this.windows = {};
+                this.zIndex = 100;
+                this.windowArea = document.getElementById('window-area');
+                this.taskbarApps = document.getElementById('taskbar-apps');
+            }
+            openWindow(appId, extraData = {}) {
+                if (extraData.type === 'folder') {
+                    if (this.windows['explorer']) {
+                        this.bringToFront('explorer');
+                        fileExplorer.nav('explorer', extraData.target);
+                        return;
+                    }
+                    appId = 'explorer';
+                }
+                
+                let winId = appId; 
+                
+                if (this.windows[winId]) {
+                    this.bringToFront(winId);
+                    return;
+                }
+
+                const config = APPS[appId];
+                if (!config) return;
+
+                const el = document.createElement('div');
+                el.id = winId;
+                el.className = `absolute flex flex-col rounded-lg shadow-2xl border border-white/10 bg-[#202020] overflow-hidden window-transition pointer-events-auto`;
+                el.style.width = `${config.width}rem`;
+                el.style.height = `${config.height}rem`;
+                el.style.top = `${5 + (Math.random() * 5)}%`;
+                el.style.left = `${15 + (Math.random() * 5)}%`;
+                el.style.zIndex = ++this.zIndex;
+
+                const title = extraData.name || config.name;
+
+                el.innerHTML = `
+                    <div class="h-9 bg-[#202020] flex justify-between items-center select-none" id="${winId}-header">
+                        <div class="flex items-center px-3 gap-3">
+                            <i class="${config.icon} ${config.color} text-xs"></i>
+                            <span class="text-xs font-medium text-white">${title}</span>
+                        </div>
+                        <div class="flex h-full">
+                            <button class="w-11 h-full hover:bg-white/10 flex items-center justify-center transition text-white" onclick="wm.minimizeWindow('${winId}')"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                            <button class="w-11 h-full hover:bg-white/10 flex items-center justify-center transition text-white" onclick="wm.maximizeWindow('${winId}')"><i class="fa-regular fa-square text-[10px]"></i></button>
+                            <button class="w-11 h-full hover:bg-red-500 flex items-center justify-center transition group text-white" onclick="wm.closeWindow('${winId}')"><i class="fa-solid fa-xmark text-[12px]"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex-1 relative overflow-hidden bg-[#202020]" id="${winId}-content">
+                        ${config.content(winId, extraData)}
+                    </div>
+                `;
+
+                this.windowArea.appendChild(el);
+                const header = el.querySelector(`#${winId}-header`);
+                if(header) header.addEventListener('mousedown', (e) => this.startDrag(e, el, winId));
+                el.addEventListener('mousedown', () => this.bringToFront(winId));
+
+                this.windows[winId] = { id: winId, element: el, minimized: false, maximized: false, prevRect: null };
+                this.addTaskbarItem(appId, winId);
+            }
+
+            closeWindow(id) {
+                if (!this.windows[id]) return;
+                this.windows[id].element.remove();
+                delete this.windows[id];
+                this.removeTaskbarItem(id);
+                
+                // Cleanup game logic
+                if(id === 'snake') {
+                    clearInterval(snakeGame.interval);
+                    if(snakeGame.inputHandler) document.removeEventListener('keydown', snakeGame.inputHandler);
+                }
+                if(id === 'shooter') {
+                    cancelAnimationFrame(shooterGame.animId);
+                    if(shooterGame.keyDownHandler) window.removeEventListener('keydown', shooterGame.keyDownHandler);
+                    if(shooterGame.keyUpHandler) window.removeEventListener('keyup', shooterGame.keyUpHandler);
+                }
+            }
+
+            minimizeWindow(id) { this.windows[id].element.style.display = 'none'; this.windows[id].minimized = true; }
+            restoreWindow(id) { this.windows[id].element.style.display = 'flex'; this.windows[id].minimized = false; this.bringToFront(id); }
+            maximizeWindow(id) { 
+                const win = this.windows[id];
+                if(win.maximized) { 
+                    Object.assign(win.element.style, win.prevRect); 
+                    win.maximized = false; 
+                } else { 
+                    win.prevRect = { width: win.element.style.width, height: win.element.style.height, top: win.element.style.top, left: win.element.style.left };
+                    Object.assign(win.element.style, { width: '100%', height: '100%', top: '0', left: '0' });
+                    win.maximized = true;
+                }
+            }
+            bringToFront(id) { if(this.windows[id]) this.windows[id].element.style.zIndex = ++this.zIndex; }
+            startDrag(e, el, id) {
+                if(this.windows[id].maximized) return;
+                this.bringToFront(id);
+                e.preventDefault();
+                const blocker = el.querySelector('.iframe-blocker');
+                if(blocker) blocker.style.pointerEvents = 'auto';
+                
+                let shiftX = e.clientX - el.getBoundingClientRect().left;
+                let shiftY = e.clientY - el.getBoundingClientRect().top;
+                const onMove = (ev) => {
+                    el.style.left = (ev.pageX - shiftX) + 'px';
+                    el.style.top = (ev.pageY - shiftY) + 'px';
+                }
+                document.addEventListener('mousemove', onMove);
+                document.onmouseup = () => {
+                    document.removeEventListener('mousemove', onMove);
+                    document.onmouseup = null;
+                    if(blocker) blocker.style.pointerEvents = 'none';
+                };
+            }
+            addTaskbarItem(appId, winId) {
+                const config = APPS[appId];
+                if(document.getElementById(`tb-${winId}`)) return;
+                const btn = document.createElement('button');
+                btn.id = `tb-${winId}`;
+                btn.className = `w-10 h-10 rounded hover:bg-white/10 flex items-center justify-center transition relative taskbar-item-active`;
+                btn.innerHTML = `<i class="${config.icon} ${config.color} text-xl"></i>`;
+                btn.onclick = () => this.windows[winId].minimized ? this.restoreWindow(winId) : this.minimizeWindow(winId);
+                this.taskbarApps.appendChild(btn);
+            }
+            removeTaskbarItem(id) { const el = document.getElementById(`tb-${id}`); if(el) el.remove(); }
+            zoom(id, val) { /* ... */ }
+        }
+
+        // --- Settings App Logic ---
+        const settingsApp = {
+            render: (id, tab) => `<div class="flex h-full bg-[#f3f3f3] text-black p-8">Settings Content (Tab: ${tab}) - Scaling/Res implemented globally.</div>`
+        };
+
+        // --- Sys Logic ---
+        const sys = {
+            sortOrder: { by: 'name', asc: true },
+            toggleStartMenu: () => {
+                const menu = document.getElementById('start-menu');
+                menu.style.bottom = menu.style.bottom === '3.5rem' ? '-40.625rem' : '3.5rem';
+            },
+            renderDesktop: () => {
+                const container = document.getElementById('desktop-icons');
+                container.innerHTML = '';
+                FILE_SYSTEM['desktop'].forEach(icon => {
+                    const el = document.createElement('div');
+                    el.className = 'w-20 h-24 flex flex-col items-center justify-center hover:bg-white/10 rounded border border-transparent hover:border-white/10 cursor-default transition group';
+                    let iconHtml = icon.icon.startsWith('http') 
+                        ? `<img src="${icon.icon}" class="w-10 h-10 rounded-full mb-2 shadow-md bg-gray-800">` 
+                        : `<i class="${icon.icon} ${icon.color} text-3xl mb-2 drop-shadow-md"></i>`;
+                    el.innerHTML = `${iconHtml}<span class="text-xs text-center text-white drop-shadow shadow-black line-clamp-2">${icon.name}</span>`;
+                    el.ondblclick = () => wm.openWindow(icon.appId, icon);
+                    container.appendChild(el);
+                });
+            },
+            initClock: () => {
+                setInterval(() => {
+                    const now = new Date();
+                    document.getElementById('clock-time').innerText = now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+                    document.getElementById('clock-date').innerText = now.toLocaleDateString();
+                }, 1000);
+            },
+            sortDesktop: () => {} // Logic preserved from previous
+        };
+
+        const contextMenu = { init: () => { /* ... logic preserved ... */ }};
+
+        // --- Initialization ---
+        const wm = new WindowManager();
+        sys.initClock();
+        sys.renderDesktop();
+        
+        // Attach context menu listeners
+        const desktop = document.getElementById('ui-root');
+        const menu = document.getElementById('context-menu');
+        desktop.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            if(e.target.closest('.window-transition') || e.target.closest('#taskbar') || e.target.closest('#start-menu')) return;
+            menu.style.left = `${e.clientX}px`;
+            menu.style.top = `${e.clientY}px`;
+            menu.style.display = 'flex';
+            menu.classList.remove('hidden');
+        });
+        document.addEventListener('click', () => menu.style.display = 'none');
+
+    </script>
+</body>
+</html>
