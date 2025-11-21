@@ -836,11 +836,11 @@
         }
 
         const APPS = {
-            'notepad': { id: 'notepad', name: 'Text Editor', icon: 'fa-regular fa-file-lines', color: 'text-blue-400', width: 37.5, height: 28.125, content: (id, d) => `<textarea class="w-full h-full bg-[#282828] text-white p-4 outline-none font-mono resize-none">${d.content}</textarea>` },
-            'pdf-viewer': { id: 'pdf-viewer', name: 'Resume Viewer', icon: 'fa-solid fa-file-pdf', color: 'text-red-500', width: 50, height: 43.75, content: (id, d) => `<div class="h-full overflow-auto bg-[#525659] p-8 flex justify-center"><div class="bg-white text-black p-8 max-w-3xl min-h-full shadow-lg">${d.content}</div></div>` },
-            'terminal': { id: 'terminal', name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', width: 37.5, height: 25, content: (id) => `<div class="h-full bg-black text-green-400 font-mono p-4"><div id="term-type-${id}"></div><div id="term-output-${id}"></div></div>` },
-            'chrome': { id: 'chrome', name: 'Chrome', icon: 'fa-brands fa-chrome', color: 'text-blue-500', width: 56.25, height: 37.5, content: (id) => `<div class="h-full flex flex-col bg-white"><div class="h-full relative"><iframe id="iframe-${id}" class="w-full h-full border-none"></iframe><div class="absolute inset-0 pointer-events-none iframe-blocker"></div></div></div>` },
-            'explorer': { id: 'explorer', name: 'Explorer', icon: 'fa-solid fa-folder', color: 'text-yellow-400', width: 50, height: 34.375, content: (id) => generateExplorerHTML(id, 'desktop', 'Desktop') },
+            'notepad': { id: 'notepad', name: 'Text Editor', icon: 'fa-regular fa-file-lines', color: 'text-blue-400', width: 28, height: 22, content: (id, d) => `<textarea class="w-full h-full bg-[#282828] text-white p-4 outline-none font-mono resize-none">${d.content}</textarea>` },
+            'pdf-viewer': { id: 'pdf-viewer', name: 'Resume Viewer', icon: 'fa-solid fa-file-pdf', color: 'text-red-500', width: 45, height: 38, content: (id, d) => `<div class="h-full overflow-auto bg-[#525659] p-8 flex justify-center scrollbar-fix"><div class="bg-white text-black p-8 max-w-3xl min-h-fit shadow-lg">${d.content}</div></div>` },
+            'terminal': { id: 'terminal', name: 'Terminal', icon: 'fa-solid fa-terminal', color: 'text-gray-100', width: 28, height: 20, content: (id) => `<div class="h-full bg-black text-green-400 font-mono p-4"><div id="term-type-${id}"></div><div id="term-output-${id}"></div></div>` },
+            'chrome': { id: 'chrome', name: 'Chrome', icon: 'fa-brands fa-chrome', color: 'text-blue-500', width: 42, height: 28, content: (id) => `<div class="h-full flex flex-col bg-white"><div class="h-full relative"><iframe id="iframe-${id}" class="w-full h-full border-none"></iframe><div class="absolute inset-0 pointer-events-none iframe-blocker"></div></div></div>` },
+            'explorer': { id: 'explorer', name: 'Explorer', icon: 'fa-solid fa-folder', color: 'text-yellow-400', width: 38, height: 26, content: (id) => generateExplorerHTML(id, 'desktop', 'Desktop') },
             
             // --- NEW GAMES ---
             'snake': {
@@ -882,7 +882,7 @@
                     </div>`;
                 }
             },
-            'settings': { id: 'settings', name: 'Settings', icon: 'fa-solid fa-gear', color: 'text-gray-400', width: 50, height: 35, content: (id, d) => settingsApp.render(id, d.tab || 'system') }
+            'settings': { id: 'settings', name: 'Settings', icon: 'fa-solid fa-gear', color: 'text-gray-400', width: 38, height: 26, content: (id, d) => settingsApp.render(id, d.tab || 'system') }
         };
 
         class WindowManager {
