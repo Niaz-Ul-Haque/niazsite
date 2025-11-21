@@ -460,6 +460,89 @@
             opacity: 1;
             pointer-events: auto;
         }
+        
+        /* Desktop Widgets */
+        .desktop-widget {
+            position: absolute;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 5;
+            cursor: move;
+            user-select: none;
+        }
+        
+        .widget-dragging {
+            opacity: 0.8;
+            cursor: grabbing !important;
+        }
+        
+        @keyframes fadeInWidget {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .widget-fade-in {
+            animation: fadeInWidget 0.3s ease-out;
+        }
+        
+        /* Calendar Panel */
+        #calendar-panel {
+            position: fixed;
+            bottom: 3.5rem;
+            right: 1rem;
+            width: 20rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        
+        #calendar-panel.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .calendar-day.today {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            font-weight: bold;
+        }
+        
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
     </style>
 </head>
 <body class="h-screen w-screen flex items-center justify-center bg-black overflow-hidden">
@@ -475,6 +558,11 @@
         <!-- Desktop Icons Container -->
         <div class="absolute top-0 left-0 h-full w-full p-2 grid grid-flow-col grid-rows-[repeat(auto-fill,6.25rem)] gap-2 content-start items-start w-fit z-0" id="desktop-icons">
             <!-- Icons injected by JS -->
+        </div>
+        
+        <!-- Desktop Widgets Container -->
+        <div id="widgets-container" class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index: 5;">
+            <!-- Widgets injected by JS -->
         </div>
 
         <!-- Context Menu -->
@@ -538,11 +626,42 @@
             </div>
         </div>
 
+        <!-- Calendar Panel -->
+        <div id="calendar-panel" class="flex flex-col">
+            <div class="p-4 border-b border-white/10">
+                <div class="text-3xl font-light mb-1" id="panel-time">12:00 PM</div>
+                <div class="text-sm text-gray-400" id="panel-date">Thursday, November 21, 2025</div>
+            </div>
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <button id="calendar-prev" class="hover:bg-white/10 rounded p-1 transition">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </button>
+                    <div class="font-semibold" id="calendar-month-year">November 2025</div>
+                    <button id="calendar-next" class="hover:bg-white/10 rounded p-1 transition">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-xs mb-2 text-gray-400">
+                    <div class="text-center">Su</div>
+                    <div class="text-center">Mo</div>
+                    <div class="text-center">Tu</div>
+                    <div class="text-center">We</div>
+                    <div class="text-center">Th</div>
+                    <div class="text-center">Fr</div>
+                    <div class="text-center">Sa</div>
+                </div>
+                <div id="calendar-days" class="grid grid-cols-7 gap-1 text-sm">
+                    <!-- Days injected by JS -->
+                </div>
+            </div>
+        </div>
+        
         <!-- Taskbar -->
         <div class="absolute bottom-0 w-full h-12 glass flex justify-between items-center px-4 z-[45] select-none" id="taskbar">
             <div class="w-32 hidden md:flex opacity-0 hover:opacity-100 transition duration-500">
                 <div class="text-xs flex flex-col justify-center items-center cursor-pointer hover:bg-white/5 p-1 rounded">
-                    <span id="weather-temp">21°C</span>
+                    <span id="weather-temp">8°C</span>
                     <span class="text-blue-300">Cloudy</span>
                 </div>
             </div>
@@ -560,10 +679,12 @@
                     <i class="fa-solid fa-volume-high text-xs"></i>
                     <i class="fa-solid fa-battery-full text-xs"></i>
                 </div>
-                <div class="text-right hover:bg-white/10 px-2 py-1 rounded transition cursor-pointer flex flex-col justify-center h-full" id="clock">
+                <div class="text-right hover:bg-white/10 px-2 py-1 rounded transition cursor-pointer flex flex-col justify-center h-full" id="clock" onclick="calendarPanel.toggle()">
                     <div class="text-xs font-medium" id="clock-time">12:00 PM</div>
                     <div class="text-[10px]" id="clock-date">11/20/2025</div>
                 </div>
+                <!-- Show Desktop Button -->
+                <div class="w-[6px] h-full hover:bg-blue-400/50 transition cursor-pointer ml-1" id="show-desktop" onclick="sys.showDesktop()" title="Show Desktop"></div>
             </div>
         </div>
 
@@ -2436,6 +2557,11 @@
                         <div class="w-64 bg-[#f0f0f0] p-4 border-r border-gray-300 flex flex-col gap-1">
                             <div class="font-bold text-lg mb-4 px-2">Settings</div>
                             
+                            <div class="flex items-center gap-3 p-2 rounded ${tab === 'widgets' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'widgets')">
+                                <i class="fa-solid fa-grid-2 text-teal-500 w-5 text-center"></i> 
+                                <span class="text-sm">Widgets</span>
+                            </div>
+                            
                             <div class="flex items-center gap-3 p-2 rounded ${tab === 'system' ? 'bg-white shadow-sm' : 'hover:bg-white/50'} cursor-pointer transition" onclick="settingsApp.switchTab('${winId}', 'system')">
                                 <i class="fa-solid fa-desktop text-blue-500 w-5 text-center"></i> 
                                 <span class="text-sm">System</span>
@@ -2460,7 +2586,58 @@
                 `;
             },
             getTabContent: function(tab) {
-                if (tab === 'system') {
+                if (tab === 'widgets') {
+                    return `
+                    <h2 class="text-2xl font-semibold mb-6">Widgets > Desktop Widgets</h2>
+                    <p class="text-sm text-gray-600 mb-6">Add interactive widgets to your desktop. Drag them to reposition anywhere on your screen.</p>
+                    
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-4">
+                        <div class="font-medium mb-4">Available Widgets</div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="widgetManager.createWidget('clock')" class="flex items-center gap-3 p-4 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg transition border border-blue-200">
+                                <i class="fa-solid fa-clock text-blue-600 text-3xl"></i>
+                                <div class="text-left">
+                                    <div class="font-semibold text-gray-800">Clock</div>
+                                    <div class="text-xs text-gray-600">Live time & date</div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="widgetManager.createWidget('weather')" class="flex items-center gap-3 p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 rounded-lg transition border border-yellow-200">
+                                <i class="fa-solid fa-cloud-sun text-yellow-600 text-3xl"></i>
+                                <div class="text-left">
+                                    <div class="font-semibold text-gray-800">Weather</div>
+                                    <div class="text-xs text-gray-600">Current conditions</div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="widgetManager.createWidget('monitor')" class="flex items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-lg transition border border-green-200">
+                                <i class="fa-solid fa-chart-line text-green-600 text-3xl"></i>
+                                <div class="text-left">
+                                    <div class="font-semibold text-gray-800">System Monitor</div>
+                                    <div class="text-xs text-gray-600">CPU, RAM, Storage</div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="widgetManager.createWidget('notes')" class="flex items-center gap-3 p-4 bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 rounded-lg transition border border-amber-200">
+                                <i class="fa-solid fa-note-sticky text-amber-600 text-3xl"></i>
+                                <div class="text-left">
+                                    <div class="font-semibold text-gray-800">Sticky Notes</div>
+                                    <div class="text-xs text-gray-600">Quick reminders</div>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                        <div class="font-medium mb-3 text-red-600">Widget Management</div>
+                        <p class="text-sm text-gray-600 mb-3">Remove all widgets from your desktop at once.</p>
+                        <button onclick="widgetManager.removeAllWidgets()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition">
+                            <i class="fa-solid fa-trash mr-2"></i>
+                            Remove All Widgets
+                        </button>
+                    </div>
+                    `;
+                } else if (tab === 'system') {
                     return `
                         <h2 class="text-2xl font-semibold mb-6">System > Display</h2>
                         
@@ -2598,6 +2775,408 @@
             }
         };
 
+        // --- Desktop Widgets Manager ---
+        const widgetManager = {
+            widgets: {},
+            nextId: 1,
+            
+            init: function() {
+                const saved = localStorage.getItem('niazOS_widgets');
+                if (saved) {
+                    try {
+                        const savedWidgets = JSON.parse(saved);
+                        savedWidgets.forEach(w => {
+                            this.createWidget(w.type, w.position, false);
+                        });
+                    } catch(e) {
+                        console.error('Failed to load widgets:', e);
+                    }
+                }
+            },
+            
+            saveState: function() {
+                const widgetsData = Object.values(this.widgets).map(w => ({
+                    type: w.type,
+                    position: { x: w.element.offsetLeft, y: w.element.offsetTop }
+                }));
+                localStorage.setItem('niazOS_widgets', JSON.stringify(widgetsData));
+            },
+            
+            createWidget: function(type, position = null, save = true) {
+                const id = `widget-${this.nextId++}`;
+                const container = document.getElementById('widgets-container');
+                
+                const widget = document.createElement('div');
+                widget.id = id;
+                widget.className = 'desktop-widget widget-fade-in';
+                widget.style.pointerEvents = 'auto';
+                
+                if (!position) {
+                    position = {
+                        x: 20 + (Object.keys(this.widgets).length * 30),
+                        y: 20 + (Object.keys(this.widgets).length * 30)
+                    };
+                }
+                
+                widget.style.left = position.x + 'px';
+                widget.style.top = position.y + 'px';
+                
+                const content = this.getWidgetContent(type, id);
+                widget.innerHTML = `
+                    <div class="flex items-center justify-between px-3 py-2 border-b border-white/10 cursor-move" id="${id}-header">
+                        <div class="flex items-center gap-2">
+                            <i class="${content.icon} ${content.color}"></i>
+                            <span class="text-sm font-medium">${content.title}</span>
+                        </div>
+                        <button onclick="widgetManager.removeWidget('${id}')" class="hover:bg-white/10 rounded p-1 transition">
+                            <i class="fa-solid fa-xmark text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="p-3">
+                        ${content.body}
+                    </div>
+                `;
+                
+                container.appendChild(widget);
+                this.makeDraggable(widget, id);
+                
+                if (type === 'clock') this.initClock(id);
+                else if (type === 'weather') this.initWeather(id);
+                else if (type === 'monitor') this.initMonitor(id);
+                else if (type === 'notes') this.initNotes(id);
+                
+                this.widgets[id] = { type, element: widget };
+                
+                if (save) this.saveState();
+                return id;
+            },
+            
+            getWidgetContent: function(type, id) {
+                switch(type) {
+                    case 'clock':
+                        return {
+                            title: 'Clock',
+                            icon: 'fa-solid fa-clock',
+                            color: 'text-blue-400',
+                            body: `
+                                <div class="text-center">
+                                    <div class="text-3xl font-bold mb-1" id="${id}-time">12:00:00</div>
+                                    <div class="text-sm text-gray-400" id="${id}-date">Loading...</div>
+                                </div>
+                            `
+                        };
+                    case 'weather':
+                        return {
+                            title: 'Weather',
+                            icon: 'fa-solid fa-cloud-sun',
+                            color: 'text-yellow-400',
+                            body: `
+                                <div class="text-center">
+                                    <div class="text-5xl mb-2">☁️</div>
+                                    <div class="text-2xl font-bold mb-1" id="${id}-temp">21°C</div>
+                                    <div class="text-sm text-gray-400">Toronto, Canada</div>
+                                    <div class="text-xs text-gray-500 mt-1">Partly Cloudy</div>
+                                </div>
+                            `
+                        };
+                    case 'monitor':
+                        return {
+                            title: 'System Monitor',
+                            icon: 'fa-solid fa-chart-line',
+                            color: 'text-green-400',
+                            body: `
+                                <div class="space-y-2 text-sm">
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>CPU</span>
+                                            <span id="${id}-cpu">0%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-black/30 rounded-full overflow-hidden">
+                                            <div id="${id}-cpu-bar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Memory</span>
+                                            <span id="${id}-mem">0%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-black/30 rounded-full overflow-hidden">
+                                            <div id="${id}-mem-bar" class="h-full bg-green-500 transition-all duration-300" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Storage</span>
+                                            <span id="${id}-disk">0%</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-black/30 rounded-full overflow-hidden">
+                                            <div id="${id}-disk-bar" class="h-full bg-purple-500 transition-all duration-300" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `
+                        };
+                    case 'notes':
+                        return {
+                            title: 'Sticky Notes',
+                            icon: 'fa-solid fa-note-sticky',
+                            color: 'text-yellow-300',
+                            body: `
+                                <textarea 
+                                    id="${id}-text" 
+                                    class="w-full h-32 bg-yellow-100 text-black p-2 rounded resize-none outline-none font-handwriting" 
+                                    placeholder="Type your notes here..."
+                                    style="font-family: 'Comic Sans MS', cursive;"
+                                ></textarea>
+                            `
+                        };
+                    default:
+                        return { title: 'Widget', icon: 'fa-solid fa-square', color: 'text-gray-400', body: '<div>Widget</div>' };
+                }
+            },
+            
+            makeDraggable: function(element, id) {
+                const header = document.getElementById(`${id}-header`);
+                let isDragging = false;
+                let currentX, currentY, initialX, initialY;
+                
+                header.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    element.classList.add('widget-dragging');
+                    initialX = e.clientX - element.offsetLeft;
+                    initialY = e.clientY - element.offsetTop;
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (isDragging) {
+                        e.preventDefault();
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                        
+                        const container = document.getElementById('widgets-container');
+                        const maxX = container.offsetWidth - element.offsetWidth;
+                        const maxY = container.offsetHeight - element.offsetHeight;
+                        
+                        currentX = Math.max(0, Math.min(currentX, maxX));
+                        currentY = Math.max(0, Math.min(currentY, maxY));
+                        
+                        element.style.left = currentX + 'px';
+                        element.style.top = currentY + 'px';
+                    }
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        element.classList.remove('widget-dragging');
+                        this.saveState();
+                    }
+                });
+            },
+            
+            removeWidget: function(id) {
+                const widget = this.widgets[id];
+                if (widget) {
+                    widget.element.remove();
+                    delete this.widgets[id];
+                    this.saveState();
+                }
+            },
+            
+            initClock: function(id) {
+                const updateClock = () => {
+                    const now = new Date();
+                    const timeEl = document.getElementById(`${id}-time`);
+                    const dateEl = document.getElementById(`${id}-date`);
+                    if (timeEl) {
+                        timeEl.innerText = now.toLocaleTimeString('en-US', {
+                            timeZone: 'America/Toronto',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        });
+                    }
+                    if (dateEl) {
+                        dateEl.innerText = now.toLocaleDateString('en-US', {
+                            timeZone: 'America/Toronto',
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    }
+                };
+                updateClock();
+                setInterval(updateClock, 1000);
+            },
+            
+            initWeather: function(id) {
+                // Toronto November temperature range (5-10°C)
+                const temps = [5, 6, 7, 8, 9, 10];
+                const updateWeather = () => {
+                    const tempEl = document.getElementById(`${id}-temp`);
+                    if (tempEl) {
+                        const temp = temps[Math.floor(Math.random() * temps.length)];
+                        tempEl.innerText = `${temp}°C`;
+                    }
+                };
+                updateWeather();
+                setInterval(updateWeather, 60000);
+            },
+            
+            initMonitor: function(id) {
+                const updateMonitor = () => {
+                    const cpu = Math.floor(Math.random() * 60) + 20;
+                    const mem = Math.floor(Math.random() * 50) + 30;
+                    const disk = Math.floor(Math.random() * 30) + 50;
+                    
+                    const cpuEl = document.getElementById(`${id}-cpu`);
+                    const cpuBar = document.getElementById(`${id}-cpu-bar`);
+                    const memEl = document.getElementById(`${id}-mem`);
+                    const memBar = document.getElementById(`${id}-mem-bar`);
+                    const diskEl = document.getElementById(`${id}-disk`);
+                    const diskBar = document.getElementById(`${id}-disk-bar`);
+                    
+                    if (cpuEl) cpuEl.innerText = `${cpu}%`;
+                    if (cpuBar) cpuBar.style.width = `${cpu}%`;
+                    if (memEl) memEl.innerText = `${mem}%`;
+                    if (memBar) memBar.style.width = `${mem}%`;
+                    if (diskEl) diskEl.innerText = `${disk}%`;
+                    if (diskBar) diskBar.style.width = `${disk}%`;
+                };
+                updateMonitor();
+                setInterval(updateMonitor, 2000);
+            },
+            
+            initNotes: function(id) {
+                const textarea = document.getElementById(`${id}-text`);
+                if (textarea) {
+                    const saved = localStorage.getItem(`widget_note_${id}`);
+                    if (saved) textarea.value = saved;
+                    textarea.addEventListener('input', () => {
+                        localStorage.setItem(`widget_note_${id}`, textarea.value);
+                    });
+                }
+            },
+            
+            removeAllWidgets: function() {
+                Object.keys(this.widgets).forEach(id => this.removeWidget(id));
+            }
+        };
+
+        // --- Calendar Panel Manager ---
+        const calendarPanel = {
+            currentMonth: new Date(),
+            isOpen: false,
+            
+            toggle: function() {
+                const panel = document.getElementById('calendar-panel');
+                this.isOpen = !this.isOpen;
+                
+                if (this.isOpen) {
+                    panel.classList.add('show');
+                    this.updateTime();
+                    this.renderCalendar();
+                } else {
+                    panel.classList.remove('show');
+                }
+            },
+            
+            updateTime: function() {
+                const now = new Date();
+                const timeEl = document.getElementById('panel-time');
+                const dateEl = document.getElementById('panel-date');
+                
+                if (timeEl) {
+                    timeEl.innerText = now.toLocaleTimeString('en-US', {
+                        timeZone: 'America/Toronto',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                }
+                
+                if (dateEl) {
+                    dateEl.innerText = now.toLocaleDateString('en-US', {
+                        timeZone: 'America/Toronto',
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                }
+            },
+            
+            renderCalendar: function() {
+                const year = this.currentMonth.getFullYear();
+                const month = this.currentMonth.getMonth();
+                
+                // Update month/year display
+                const monthYearEl = document.getElementById('calendar-month-year');
+                if (monthYearEl) {
+                    monthYearEl.innerText = this.currentMonth.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long'
+                    });
+                }
+                
+                // Get first day of month and number of days
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const daysInPrevMonth = new Date(year, month, 0).getDate();
+                
+                const daysContainer = document.getElementById('calendar-days');
+                if (!daysContainer) return;
+                
+                daysContainer.innerHTML = '';
+                
+                const today = new Date();
+                const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+                const todayDate = today.getDate();
+                
+                // Previous month days
+                for (let i = firstDay - 1; i >= 0; i--) {
+                    const day = daysInPrevMonth - i;
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day other-month';
+                    dayEl.innerText = day;
+                    daysContainer.appendChild(dayEl);
+                }
+                
+                // Current month days
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    if (isCurrentMonth && day === todayDate) {
+                        dayEl.classList.add('today');
+                    }
+                    dayEl.innerText = day;
+                    daysContainer.appendChild(dayEl);
+                }
+                
+                // Next month days
+                const totalCells = daysContainer.children.length;
+                const remainingCells = 42 - totalCells; // 6 weeks
+                for (let day = 1; day <= remainingCells; day++) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day other-month';
+                    dayEl.innerText = day;
+                    daysContainer.appendChild(dayEl);
+                }
+            },
+            
+            prevMonth: function() {
+                this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() - 1, 1);
+                this.renderCalendar();
+            },
+            
+            nextMonth: function() {
+                this.currentMonth = new Date(this.currentMonth.getFullYear(), this.currentMonth.getMonth() + 1, 1);
+                this.renderCalendar();
+            }
+        };
+
         // --- Sys Logic ---
         const sys = {
             sortOrder: { by: 'name', asc: true },
@@ -2684,6 +3263,27 @@
                     menu.style.opacity = '1';
                 }
             },
+            
+            showDesktop: () => {
+                // Minimize all open windows
+                Object.keys(wm.windows).forEach(id => {
+                    if (!wm.windows[id].minimized) {
+                        wm.minimizeWindow(id);
+                    }
+                });
+                
+                // Close start menu if open
+                const menu = document.getElementById('start-menu');
+                const isOpen = menu.style.bottom === '3rem' || menu.style.bottom === '48px';
+                if (isOpen) {
+                    sys.toggleStartMenu();
+                }
+                
+                // Close calendar panel if open
+                if (calendarPanel.isOpen) {
+                    calendarPanel.toggle();
+                }
+            },
             renderDesktop: () => {
                 const container = document.getElementById('desktop-icons');
                 container.innerHTML = '';
@@ -2735,11 +3335,28 @@
                 });
             },
             initClock: () => {
-                setInterval(() => {
+                const updateClock = () => {
                     const now = new Date();
-                    document.getElementById('clock-time').innerText = now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
-                    document.getElementById('clock-date').innerText = now.toLocaleDateString();
-                }, 1000);
+                    document.getElementById('clock-time').innerText = now.toLocaleTimeString('en-US', {
+                        timeZone: 'America/Toronto',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                    document.getElementById('clock-date').innerText = now.toLocaleDateString('en-US', {
+                        timeZone: 'America/Toronto',
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric'
+                    });
+                    
+                    // Update calendar panel if open
+                    if (calendarPanel.isOpen) {
+                        calendarPanel.updateTime();
+                    }
+                };
+                updateClock();
+                setInterval(updateClock, 1000);
             },
             sortDesktop: () => {} // Logic preserved from previous
             ,changeWallpaper: (url) => {
@@ -2865,6 +3482,19 @@
         sys.renderDesktop();
         sys.renderStartMenu();
         
+        // Initialize widgets
+        widgetManager.init();
+        
+        // Setup calendar panel navigation
+        document.getElementById('calendar-prev').addEventListener('click', (e) => {
+            e.stopPropagation();
+            calendarPanel.prevMonth();
+        });
+        document.getElementById('calendar-next').addEventListener('click', (e) => {
+            e.stopPropagation();
+            calendarPanel.nextMonth();
+        });
+        
         // Auto-save state every 30 seconds
         setInterval(() => sys.saveState(), 30000);
         
@@ -2890,6 +3520,15 @@
             if (isOpen) {
                 if (!menu.contains(e.target) && !startBtn.contains(e.target)) {
                     sys.toggleStartMenu();
+                }
+            }
+            
+            // Close calendar panel if clicking outside
+            const calendarPanelEl = document.getElementById('calendar-panel');
+            const clockEl = document.getElementById('clock');
+            if (calendarPanel.isOpen && calendarPanelEl && clockEl) {
+                if (!calendarPanelEl.contains(e.target) && !clockEl.contains(e.target)) {
+                    calendarPanel.toggle();
                 }
             }
             
