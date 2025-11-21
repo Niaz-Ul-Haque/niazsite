@@ -1375,7 +1375,13 @@
                         <span class="text-xs text-center leading-tight">${app.name}</span>
                     `;
                     el.onclick = () => {
-                        wm.openWindow(appId);
+                        // For pdf-viewer, pass the resume file data
+                        if (appId === 'pdf-viewer') {
+                            const resumeFile = FILE_SYSTEM['niaz_profile'][0]; // Resume.pdf
+                            wm.openWindow(appId, resumeFile);
+                        } else {
+                            wm.openWindow(appId);
+                        }
                         sys.toggleStartMenu();
                     };
                     grid.appendChild(el);
